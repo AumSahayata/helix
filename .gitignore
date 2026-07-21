@@ -1,0 +1,43 @@
+# PlatformIO
+.pio/
+.vscode/.browse.c_cpp.db*
+.vscode/c_cpp_properties.json
+.vscode/launch.json
+.vscode/ipch/
+
+# Build output
+build/
+bin/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Python (helper scripts)
+__pycache__/
+*.pyc
+
+# Archives
+*.zip
+*.rar
+*.7z
+
+# Environment
+.env
+
+# Backup files
+*.bak
+*.old
