@@ -22,3 +22,19 @@
 Bring up the ESP32 and verify the development environment.
 
 ---
+
+## 2026-07-29
+
+* Received all the Hardware.
+
+### Update
+
+* Tested all the parts.
+* Created Stopwatch and Pomodoro timer.
+
+
+### Next Goal
+
+Create better UI and try playing music over bluetooth
+
+---

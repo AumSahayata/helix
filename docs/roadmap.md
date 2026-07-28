@@ -4,10 +4,10 @@
 
 ### Core
 
-* [ ] ESP32 bring-up
-* [ ] Serial output
-* [ ] Display initialization
-* [ ] Button input
+* [x] ESP32 bring-up
+* [x] Serial output
+* [x] Display initialization
+* [x] Button input
 
 ---
 
