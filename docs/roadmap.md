@@ -1,22 +1,44 @@
-# Roadmap
+# Helix Roadmap
 
-## v0.1
+## Version 0.1
 
-- Display
-- Buttons
+### Core
 
-## v0.2
+* [ ] ESP32 bring-up
+* [ ] Serial output
+* [ ] Display initialization
+* [ ] Button input
 
-- SD Card
-- Music Playback
+---
 
-## v0.3
+## Version 0.2
 
-- Battery
+* [ ] SD card support
+* [ ] File browser
+* [ ] Audio playback
+* [ ] Volume control
+
+---
+
+## Version 0.3
+
+* [ ] Home screen
+* [ ] Music player UI
+* [ ] Battery monitoring
+* [ ] Sleep mode
+
+---
 
 ## Future Ideas
 
-- Bluetooth
-- To-do
-- Notes
-- Companion App
+These are ideas, not commitments.
+
+* Bluetooth audio
+* To-do list
+* Timer
+* Stopwatch
+* Calendar
+* Companion desktop app
+* Android companion app
+* Custom PCB
+* Custom enclosure
