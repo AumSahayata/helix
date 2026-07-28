@@ -3,8 +3,8 @@
 // =========================
 // Constructor
 // =========================
-Pomodoro::Pomodoro(Adafruit_ST7789& display)
-    : tft(display)
+Pomodoro::Pomodoro(Adafruit_ST7789 &display, UI &uiManager)
+    : tft(display), ui(uiManager)
 {
     remaining = FOCUS_TIME;
 }
@@ -22,38 +22,15 @@ void Pomodoro::begin()
 // =========================
 void Pomodoro::drawScreen()
 {
-    tft.fillScreen(ST77XX_BLACK);
+    ui.clear();
 
-    // Header
-    tft.setTextColor(ST77XX_WHITE);
-    tft.setTextSize(2);
+    ui.drawHeader("POMODORO");
 
-    tft.setCursor(10, 15);
-    tft.print("HELIX");
+    ui.drawControls(
+        "Start / Pause",
+        "Reset",
+        "Home");
 
-    tft.setCursor(125, 15);
-    tft.print("POMODORO");
-
-    tft.drawFastHLine(
-        10,
-        45,
-        220,
-        ST77XX_WHITE
-    );
-
-    // Instructions
-    tft.setTextSize(1);
-
-    tft.setCursor(20, 220);
-    tft.print("SELECT: Start / Pause");
-
-    tft.setCursor(20, 245);
-    tft.print("UP: Reset");
-
-    tft.setCursor(20, 270);
-    tft.print("BACK: Home");
-
-    // Dynamic parts
     drawMode();
     drawTime(remaining);
     drawStatus();
@@ -69,19 +46,19 @@ void Pomodoro::drawMode()
         70,
         120,
         25,
-        ST77XX_BLACK
-    );
+        Theme::BACKGROUND);
 
     tft.setTextSize(2);
-    tft.setTextColor(ST77XX_WHITE);
 
     if (mode == Mode::FOCUS)
     {
+        tft.setTextColor(Theme::PRIMARY);
         tft.setCursor(85, 70);
         tft.print("FOCUS");
     }
     else
     {
+        tft.setTextColor(Theme::WARNING);
         tft.setCursor(85, 70);
         tft.print("BREAK");
     }
@@ -109,16 +86,14 @@ void Pomodoro::drawTime(unsigned long timeRemaining)
         sizeof(timeText),
         "%02u:%02u",
         minutes,
-        seconds
-    );
+        seconds);
 
     tft.setTextSize(5);
 
     // Opaque background prevents flicker.
     tft.setTextColor(
         ST77XX_WHITE,
-        ST77XX_BLACK
-    );
+        ST77XX_BLACK);
 
     tft.setCursor(45, 120);
     tft.print(timeText);
@@ -131,19 +106,23 @@ void Pomodoro::drawStatus()
 {
     tft.setTextSize(1);
 
-    tft.setTextColor(
-        ST77XX_WHITE,
-        ST77XX_BLACK
-    );
-
     tft.setCursor(95, 180);
 
     if (running)
     {
+        tft.setTextColor(
+            Theme::SUCCESS,
+            Theme::BACKGROUND);
+
         tft.print(" RUNNING ");
     }
     else
     {
+        tft.setTextColor(
+            Theme::MUTED,
+            Theme::BACKGROUND
+        );
+
         tft.print(" PAUSED  ");
     }
 }

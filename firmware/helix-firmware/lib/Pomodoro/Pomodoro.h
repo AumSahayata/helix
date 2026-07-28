@@ -4,10 +4,12 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_ST7789.h>
 
+#include <UI.h>
+
 class Pomodoro
 {
 public:
-    Pomodoro(Adafruit_ST7789& display);
+    Pomodoro(Adafruit_ST7789 &display, UI &ui);
 
     void begin();
 
@@ -25,7 +27,8 @@ private:
         BREAK
     };
 
-    Adafruit_ST7789& tft;
+    Adafruit_ST7789 &tft;
+    UI &ui;
 
     Mode mode = Mode::FOCUS;
 

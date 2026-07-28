@@ -3,6 +3,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_ST7789.h>
 
+#include <UI.h>
 #include <Input.h>
 #include <Stopwatch.h>
 #include <Pomodoro.h>
@@ -19,9 +20,11 @@ constexpr int TFT_RST = 4;
 SPIClass displaySPI(FSPI);
 Adafruit_ST7789 tft(&displaySPI, TFT_CS, TFT_DC, TFT_RST);
 
+UI ui(tft);
+
 // Create app objects
-Stopwatch stopwatch(tft);
-Pomodoro pomodoro(tft);
+Stopwatch stopwatch(tft, ui);
+Pomodoro pomodoro(tft, ui);
 
 // =========================
 // Buttons
@@ -69,52 +72,52 @@ int selectedItem = 0;
 // =========================
 // Draw Home Screen
 // =========================
+void drawMenuItem(int index, bool selected)
+{
+  int y = 75 + (index * 35);
+
+  // Clear only this menu row
+  tft.fillRect(
+      10,
+      y - 7,
+      220,
+      30,
+      Theme::BACKGROUND);
+
+  tft.setTextSize(2);
+
+  if (selected)
+  {
+    tft.fillRoundRect(
+        10,
+        y - 7,
+        220,
+        30,
+        5,
+        Theme::PRIMARY);
+
+    tft.setTextColor(Theme::BACKGROUND);
+    tft.setCursor(25, y);
+    tft.print("> ");
+    tft.print(menuItems[index]);
+  }
+  else
+  {
+    tft.setTextColor(Theme::TEXT);
+    tft.setCursor(25, y);
+    tft.print("  ");
+    tft.print(menuItems[index]);
+  }
+}
+
 void drawMenu()
 {
-  tft.fillScreen(ST77XX_BLACK);
-
-  // Header
-  tft.setTextSize(3);
-  tft.setTextColor(ST77XX_WHITE);
-  tft.setCursor(15, 15);
-  tft.print("HELIX");
-
-  // Separator
-  tft.drawFastHLine(10, 52, 220, ST77XX_WHITE);
-
-  // Menu
-  tft.setTextSize(2);
+  ui.clear();
+  ui.drawHeader("HOME");
 
   for (int i = 0; i < MENU_COUNT; i++)
   {
-
-    int y = 75 + (i * 35);
-
-    if (i == selectedItem)
-    {
-
-      // Selected item background
-      tft.fillRoundRect(
-          10,
-          y - 7,
-          220,
-          30,
-          5,
-          ST77XX_WHITE);
-
-      tft.setTextColor(ST77XX_BLACK);
-      tft.setCursor(25, y);
-      tft.print("> ");
-      tft.print(menuItems[i]);
-    }
-    else
-    {
-
-      tft.setTextColor(ST77XX_WHITE);
-      tft.setCursor(25, y);
-      tft.print("  ");
-      tft.print(menuItems[i]);
-    }
+    drawMenuItem(i, i == selectedItem);
   }
 }
 
@@ -148,6 +151,7 @@ void handleHomeInput(Button button)
 
   if (button == Button::UP)
   {
+    int oldItem = selectedItem;
 
     selectedItem--;
 
@@ -156,7 +160,11 @@ void handleHomeInput(Button button)
       selectedItem = MENU_COUNT - 1;
     }
 
-    drawMenu();
+    // Remove old highlight
+    drawMenuItem(oldItem, false);
+
+    // Draw new highlight
+    drawMenuItem(selectedItem, true);
 
     Serial.print("Selected: ");
     Serial.println(menuItems[selectedItem]);
@@ -164,7 +172,7 @@ void handleHomeInput(Button button)
 
   else if (button == Button::DOWN)
   {
-
+    int oldItem = selectedItem;
     selectedItem++;
 
     if (selectedItem >= MENU_COUNT)
@@ -172,7 +180,8 @@ void handleHomeInput(Button button)
       selectedItem = 0;
     }
 
-    drawMenu();
+    drawMenuItem(oldItem, false);
+    drawMenuItem(selectedItem, true);
 
     Serial.print("Selected: ");
     Serial.println(menuItems[selectedItem]);

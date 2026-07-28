@@ -1,7 +1,7 @@
 #include "Stopwatch.h"
 
-Stopwatch::Stopwatch(Adafruit_ST7789 &display)
-    : tft(display)
+Stopwatch::Stopwatch(Adafruit_ST7789 &display, UI &uiManager)
+    : tft(display), ui(uiManager)
 {
 }
 
@@ -13,33 +13,15 @@ void Stopwatch::begin()
 
 void Stopwatch::drawScreen()
 {
-    tft.fillScreen(ST77XX_BLACK);
+    ui.clear();
 
-    tft.setTextColor(ST77XX_WHITE);
-    tft.setTextSize(2);
+    ui.drawHeader("STOPWATCH");
 
-    tft.setCursor(10, 15);
-    tft.print("HELIX");
-
-    tft.setCursor(120, 15);
-    tft.print("STOPWATCH");
-
-    tft.drawFastHLine(
-        10,
-        45,
-        220,
-        ST77XX_WHITE);
-
-    tft.setTextSize(1);
-
-    tft.setCursor(20, 220);
-    tft.print("SELECT: Start / Pause");
-
-    tft.setCursor(20, 245);
-    tft.print("UP: Reset");
-
-    tft.setCursor(20, 270);
-    tft.print("BACK: Home");
+    ui.drawControls(
+        "Start / Pause",
+        "Reset",
+        "Home"
+    );
 
     drawTime(elapsed);
 }

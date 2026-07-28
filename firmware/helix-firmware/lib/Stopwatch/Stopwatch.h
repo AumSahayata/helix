@@ -4,10 +4,12 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_ST7789.h>
 
+#include <UI.h>
+
 class Stopwatch
 {
 public:
-    Stopwatch(Adafruit_ST7789 &display);
+    Stopwatch(Adafruit_ST7789 &display, UI &ui);
 
     void begin();
 
@@ -21,6 +23,7 @@ public:
 
 private:
     Adafruit_ST7789 &tft;
+    UI &ui;
 
     bool running = false;
 
