@@ -4,8 +4,7 @@ Input::Input(
     int upPin,
     int downPin,
     int selectPin,
-    int backPin
-)
+    int backPin)
     : upPin(upPin),
       downPin(downPin),
       selectPin(selectPin),
@@ -21,37 +20,94 @@ void Input::begin()
     pinMode(backPin, INPUT_PULLUP);
 }
 
-Button Input::getButton()
+InputEvent Input::processButton(
+    ButtonState &state,
+    bool isPressed,
+    InputEvent pressEvent,
+    InputEvent holdEvent)
 {
-    // Still inside debounce period?
-    if (millis() - lastPress < DEBOUNCE_MS)
+    uint32_t now = millis();
+
+    // Ignore bouncing
+    if (isPressed != state.isDown)
     {
-        return Button::NONE;
+        if (now - state.lastChange < DEBOUNCE_TIME)
+            return InputEvent::NONE;
+
+        state.lastChange = now;
     }
 
-    Button pressed = Button::NONE;
+    // Button pressed
+    if (isPressed && !state.isDown)
+    {
+        state.isDown = true;
+        state.pressedAt = now;
+        state.holdSent = false;
 
-    if (digitalRead(upPin) == LOW)
-    {
-        pressed = Button::UP;
-    }
-    else if (digitalRead(downPin) == LOW)
-    {
-        pressed = Button::DOWN;
-    }
-    else if (digitalRead(selectPin) == LOW)
-    {
-        pressed = Button::SELECT;
-    }
-    else if (digitalRead(backPin) == LOW)
-    {
-        pressed = Button::BACK;
+        return InputEvent::NONE;
     }
 
-    if (pressed != Button::NONE)
+    // Hold detected
+    if (state.isDown &&
+        !state.holdSent &&
+        (now - state.pressedAt >= HOLD_TIME))
     {
-        lastPress = millis();
+        state.holdSent = true;
+        return holdEvent;
     }
 
-    return pressed;
+    // Button released
+    if (!isPressed && state.isDown)
+    {
+        state.isDown = false;
+
+        if (!state.holdSent)
+        {
+            return pressEvent;
+        }
+
+        state.holdSent = false;
+    }
+
+    return InputEvent::NONE;
+}
+
+InputEvent Input::getEvent()
+{
+    InputEvent event;
+
+    event = processButton(
+        upState,
+        digitalRead(upPin) == LOW,
+        InputEvent::UP_PRESS,
+        InputEvent::UP_HOLD);
+
+    if (event != InputEvent::NONE)
+        return event;
+
+    event = processButton(
+        downState,
+        digitalRead(downPin) == LOW,
+        InputEvent::DOWN_PRESS,
+        InputEvent::DOWN_HOLD);
+
+    if (event != InputEvent::NONE)
+        return event;
+
+    event = processButton(
+        selectState,
+        digitalRead(selectPin) == LOW,
+        InputEvent::SELECT_PRESS,
+        InputEvent::SELECT_HOLD);
+
+    if (event != InputEvent::NONE)
+        return event;
+
+    event = processButton(
+        backState,
+        digitalRead(backPin) == LOW,
+        InputEvent::BACK_PRESS,
+        InputEvent::BACK_HOLD);
+
+    return event;
 }

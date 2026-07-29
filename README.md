@@ -1,5 +1,12 @@
 # Helix
 
+![Platform](https://img.shields.io/badge/Platform-ESP32--S3-blue)
+![Framework](https://img.shields.io/badge/Framework-Arduino-00979D?logo=arduino)
+![IDE](https://img.shields.io/badge/IDE-PlatformIO-orange?logo=platformio)
+![Language](https://img.shields.io/badge/Language-C%2B%2B-00599C?logo=cplusplus)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Status](https://img.shields.io/badge/Status-In_Development-yellow)
+
 > A modular handheld companion built on the ESP32-S3.
 
 Helix is an open-source handheld device built from scratch around the ESP32-S3.
@@ -36,7 +43,7 @@ Helix currently uses:
 - Physical navigation buttons
 - Rechargeable battery system
 
-Detailed wiring and GPIO assignments are documented in [PINOUTS.md](docs/PINOUTS.md).
+Detailed wiring and GPIO assignments are documented in [pinouts.md](docs/pinouts.md).
 
 ## Project Goals
 

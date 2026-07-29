@@ -5,6 +5,7 @@
 
 #include <UI.h>
 #include <Input.h>
+#include <Music.h>
 #include <Stopwatch.h>
 #include <Pomodoro.h>
 
@@ -25,9 +26,10 @@ UI ui(tft);
 // Create app objects
 Stopwatch stopwatch(tft, ui);
 Pomodoro pomodoro(tft, ui);
+Music music(tft, ui);
 
 // =========================
-// Buttons
+// InputEvents
 // =========================
 constexpr int BTN_UP = 35;
 constexpr int BTN_DOWN = 36;
@@ -47,6 +49,7 @@ enum class Screen
 {
   HOME,
   APP,
+  MUSIC,
   POMODORO,
   STOPWATCH
 };
@@ -146,10 +149,10 @@ void drawApp()
 // =========================
 // Home Input
 // =========================
-void handleHomeInput(Button button)
+void handleHomeInput(InputEvent event)
 {
 
-  if (button == Button::UP)
+  if (event == InputEvent::UP_PRESS)
   {
     int oldItem = selectedItem;
 
@@ -170,7 +173,7 @@ void handleHomeInput(Button button)
     Serial.println(menuItems[selectedItem]);
   }
 
-  else if (button == Button::DOWN)
+  else if (event == InputEvent::DOWN_PRESS)
   {
     int oldItem = selectedItem;
     selectedItem++;
@@ -186,15 +189,26 @@ void handleHomeInput(Button button)
     Serial.print("Selected: ");
     Serial.println(menuItems[selectedItem]);
   }
+  else if (event == InputEvent::SELECT_HOLD) {
+    Serial.println("SELECT HOLD");
+  }
 
-  else if (button == Button::SELECT)
+  else if (event == InputEvent::SELECT_PRESS)
   {
 
     Serial.print("Opening: ");
     Serial.println(menuItems[selectedItem]);
 
+    // Music is menu item 0
+    if (selectedItem == 0)
+    {
+      currentScreen = Screen::MUSIC;
+
+      music.drawScreen();
+    }
+
     // Pomodoro is menu item 2
-    if (selectedItem == 2)
+    else if (selectedItem == 2)
     {
 
       currentScreen = Screen::POMODORO;
@@ -224,10 +238,10 @@ void handleHomeInput(Button button)
 // =========================
 // App Input
 // =========================
-void handleAppInput(Button button)
+void handleAppInput(InputEvent event)
 {
 
-  if (button == Button::BACK)
+  if (event == InputEvent::BACK_PRESS)
   {
 
     currentScreen = Screen::HOME;
@@ -241,22 +255,22 @@ void handleAppInput(Button button)
 // =========================
 // Stopwatch Input
 // =========================
-void handleStopwatchInput(Button button)
+void handleStopwatchInput(InputEvent event)
 {
   // START / PAUSE
-  if (button == Button::SELECT)
+  if (event == InputEvent::SELECT_PRESS)
   {
     stopwatch.startPause();
   }
 
   // RESET
-  else if (button == Button::UP)
+  else if (event == InputEvent::UP_PRESS)
   {
     stopwatch.reset();
   }
 
   // BACK
-  else if (button == Button::BACK)
+  else if (event == InputEvent::BACK_PRESS)
   {
     // Pause before leaving if currently running.
     if (stopwatch.isRunning())
@@ -275,22 +289,22 @@ void handleStopwatchInput(Button button)
 // =========================
 // Pomodoro Input
 // =========================
-void handlePomodoroInput(Button button)
+void handlePomodoroInput(InputEvent event)
 {
   // START / PAUSE
-  if (button == Button::SELECT)
+  if (event == InputEvent::SELECT_PRESS)
   {
     pomodoro.startPause();
   }
 
   // RESET
-  else if (button == Button::UP)
+  else if (event == InputEvent::UP_PRESS)
   {
     pomodoro.reset();
   }
 
   // BACK
-  else if (button == Button::BACK)
+  else if (event == InputEvent::BACK_PRESS)
   {
     // Pause before leaving.
     if (pomodoro.isRunning())
@@ -303,6 +317,39 @@ void handlePomodoroInput(Button button)
     drawMenu();
 
     Serial.println("Returning home");
+  }
+}
+
+// =========================
+// Music Input
+// =========================
+void handleMusicInput(InputEvent event)
+{
+  if (event == InputEvent::SELECT_PRESS)
+  {
+    music.playPause();
+  }
+
+  else if (event == InputEvent::UP_PRESS)
+  {
+    music.nextTrack();
+  }
+
+  else if (event == InputEvent::DOWN_PRESS)
+  {
+    music.previousTrack();
+  }
+
+  else if (event == InputEvent::BACK_PRESS)
+  {
+    if (music.isPlaying())
+    {
+      music.playPause();
+    }
+
+    currentScreen = Screen::HOME;
+
+    drawMenu();
   }
 }
 
@@ -329,6 +376,7 @@ void setup()
 
   stopwatch.begin();
   pomodoro.begin();
+  music.begin();
 
   drawMenu();
 
@@ -340,12 +388,19 @@ void setup()
 // =========================
 void loop()
 {
-  Button button = input.getButton();
+  InputEvent event = input.getEvent();
 
   // Handle input depending on current screen
   if (currentScreen == Screen::HOME)
   {
-    handleHomeInput(button);
+    handleHomeInput(event);
+  }
+
+  else if (currentScreen == Screen::MUSIC)
+  {
+    music.update();
+
+    handleMusicInput(event);
   }
 
   else if (currentScreen == Screen::STOPWATCH)
@@ -353,7 +408,7 @@ void loop()
     // Let the Stopwatch handle its own timing/display.
     stopwatch.update();
 
-    handleStopwatchInput(button);
+    handleStopwatchInput(event);
   }
 
   else if (currentScreen == Screen::POMODORO)
@@ -362,11 +417,11 @@ void loop()
     // drawing and Focus/Break transitions.
     pomodoro.update();
 
-    handlePomodoroInput(button);
+    handlePomodoroInput(event);
   }
 
   else if (currentScreen == Screen::APP)
   {
-    handleAppInput(button);
+    handleAppInput(event);
   }
 }

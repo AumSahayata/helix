@@ -26,11 +26,6 @@ void Pomodoro::drawScreen()
 
     ui.drawHeader("POMODORO");
 
-    ui.drawControls(
-        "Start / Pause",
-        "Reset",
-        "Home");
-
     drawMode();
     drawTime(remaining);
     drawStatus();

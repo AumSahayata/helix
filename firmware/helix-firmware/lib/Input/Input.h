@@ -2,13 +2,19 @@
 
 #include <Arduino.h>
 
-enum class Button
+enum class InputEvent
 {
     NONE,
-    UP,
-    DOWN,
-    SELECT,
-    BACK
+
+    UP_PRESS,
+    DOWN_PRESS,
+    SELECT_PRESS,
+    BACK_PRESS,
+
+    UP_HOLD,
+    DOWN_HOLD,
+    SELECT_HOLD,
+    BACK_HOLD
 };
 
 class Input
@@ -18,12 +24,11 @@ public:
         int upPin,
         int downPin,
         int selectPin,
-        int backPin
-    );
+        int backPin);
 
     void begin();
 
-    Button getButton();
+    InputEvent getEvent();
 
 private:
     int upPin;
@@ -31,7 +36,25 @@ private:
     int selectPin;
     int backPin;
 
-    unsigned long lastPress = 0;
+    struct ButtonState
+    {
+        bool isDown = false;     // Current stable button state
+        uint32_t pressedAt = 0;  // When the button was pressed
+        uint32_t lastChange = 0; // Last accepted state change (debounce)
+        bool holdSent = false;   // Prevent multiple HOLD events
+    };
 
-    static constexpr unsigned long DEBOUNCE_MS = 180;
+    ButtonState upState;
+    ButtonState downState;
+    ButtonState selectState;
+    ButtonState backState;
+
+    InputEvent processButton(
+        ButtonState &state,
+        bool isPressed,
+        InputEvent pressEvent,
+        InputEvent holdEvent);
+
+    static constexpr uint32_t DEBOUNCE_TIME = 30;
+    static constexpr uint32_t HOLD_TIME = 500;
 };

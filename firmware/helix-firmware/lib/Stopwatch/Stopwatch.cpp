@@ -17,12 +17,6 @@ void Stopwatch::drawScreen()
 
     ui.drawHeader("STOPWATCH");
 
-    ui.drawControls(
-        "Start / Pause",
-        "Reset",
-        "Home"
-    );
-
     drawTime(elapsed);
 }
 
