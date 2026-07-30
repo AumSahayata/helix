@@ -5,6 +5,7 @@
 #include <Adafruit_ST7789.h>
 
 #include <UI.h>
+#include <Input.h>
 
 class Pomodoro
 {
@@ -19,6 +20,8 @@ public:
     void update();
 
     bool isRunning() const;
+
+    void handleInput(InputEvent event);
 
 private:
     enum class Mode

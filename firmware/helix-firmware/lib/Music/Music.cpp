@@ -253,8 +253,7 @@ void Music::drawProgressOutline()
         265,
         200,
         10,
-        Theme::PRIMARY
-    );
+        Theme::PRIMARY);
 }
 
 void Music::drawElapsedTime()
@@ -289,7 +288,7 @@ void Music::drawElapsedTime()
 
 void Music::drawProgressFill()
 {
-    Track& track = playlist[currentTrack];
+    Track &track = playlist[currentTrack];
 
     Widgets::drawProgressFill(
         tft,
@@ -300,6 +299,34 @@ void Music::drawProgressFill()
         elapsed,
         track.duration,
         Theme::PRIMARY,
-        Theme::BACKGROUND
-    );
+        Theme::BACKGROUND);
+}
+
+void Music::handleInput(InputEvent event)
+{
+    switch (event)
+    {
+    case InputEvent::SELECT_PRESS:
+        playPause();
+        break;
+
+    case InputEvent::UP_PRESS:
+        nextTrack();
+        break;
+
+    case InputEvent::UP_HOLD:
+        // volumeUp();
+        break;
+
+    case InputEvent::DOWN_PRESS:
+        previousTrack();
+        break;
+
+    case InputEvent::DOWN_HOLD:
+        // volumeDown();
+        break;
+
+    default:
+        break;
+    }
 }

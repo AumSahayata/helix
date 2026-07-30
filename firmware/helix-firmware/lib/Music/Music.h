@@ -4,6 +4,7 @@
 #include <Adafruit_ST7789.h>
 
 #include <UI.h>
+#include <Input.h>
 
 struct Track
 {
@@ -33,6 +34,8 @@ public:
     void previousTrack();
 
     bool isPlaying() const;
+
+    void handleInput(InputEvent event);
 
 private:
     Adafruit_ST7789 &tft;

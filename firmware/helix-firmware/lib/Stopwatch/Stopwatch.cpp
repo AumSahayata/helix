@@ -1,4 +1,5 @@
 #include "Stopwatch.h"
+#include <Input.h>
 
 Stopwatch::Stopwatch(Adafruit_ST7789 &display, UI &uiManager)
     : tft(display), ui(uiManager)
@@ -109,4 +110,21 @@ void Stopwatch::update()
 bool Stopwatch::isRunning() const
 {
     return running;
+}
+
+void Stopwatch::handleInput(InputEvent event)
+{
+    switch (event)
+    {
+    case InputEvent::SELECT_PRESS:
+        startPause();
+        break;
+
+    case InputEvent::UP_PRESS:
+        reset();
+        break;
+
+    default:
+        break;
+    }
 }

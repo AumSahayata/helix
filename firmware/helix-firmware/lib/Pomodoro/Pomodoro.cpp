@@ -261,3 +261,20 @@ bool Pomodoro::isRunning() const
 {
     return running;
 }
+
+void Pomodoro::handleInput(InputEvent event)
+{
+    switch (event)
+    {
+    case InputEvent::SELECT_PRESS:
+        startPause();
+        break;
+
+    case InputEvent::UP_PRESS:
+        reset();
+        break;
+
+    default:
+        break;
+    }
+}

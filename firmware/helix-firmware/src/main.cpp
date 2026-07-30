@@ -146,6 +146,13 @@ void drawApp()
   tft.println("BACK to return");
 }
 
+void goHome()
+{
+  currentScreen = Screen::HOME;
+  drawMenu();
+  Serial.println("Returning home");
+}
+
 // =========================
 // Home Input
 // =========================
@@ -189,7 +196,8 @@ void handleHomeInput(InputEvent event)
     Serial.print("Selected: ");
     Serial.println(menuItems[selectedItem]);
   }
-  else if (event == InputEvent::SELECT_HOLD) {
+  else if (event == InputEvent::SELECT_HOLD)
+  {
     Serial.println("SELECT HOLD");
   }
 
@@ -243,113 +251,7 @@ void handleAppInput(InputEvent event)
 
   if (event == InputEvent::BACK_PRESS)
   {
-
-    currentScreen = Screen::HOME;
-
-    Serial.println("Returning home");
-
-    drawMenu();
-  }
-}
-
-// =========================
-// Stopwatch Input
-// =========================
-void handleStopwatchInput(InputEvent event)
-{
-  // START / PAUSE
-  if (event == InputEvent::SELECT_PRESS)
-  {
-    stopwatch.startPause();
-  }
-
-  // RESET
-  else if (event == InputEvent::UP_PRESS)
-  {
-    stopwatch.reset();
-  }
-
-  // BACK
-  else if (event == InputEvent::BACK_PRESS)
-  {
-    // Pause before leaving if currently running.
-    if (stopwatch.isRunning())
-    {
-      stopwatch.startPause();
-    }
-
-    currentScreen = Screen::HOME;
-
-    drawMenu();
-
-    Serial.println("Returning home");
-  }
-}
-
-// =========================
-// Pomodoro Input
-// =========================
-void handlePomodoroInput(InputEvent event)
-{
-  // START / PAUSE
-  if (event == InputEvent::SELECT_PRESS)
-  {
-    pomodoro.startPause();
-  }
-
-  // RESET
-  else if (event == InputEvent::UP_PRESS)
-  {
-    pomodoro.reset();
-  }
-
-  // BACK
-  else if (event == InputEvent::BACK_PRESS)
-  {
-    // Pause before leaving.
-    if (pomodoro.isRunning())
-    {
-      pomodoro.startPause();
-    }
-
-    currentScreen = Screen::HOME;
-
-    drawMenu();
-
-    Serial.println("Returning home");
-  }
-}
-
-// =========================
-// Music Input
-// =========================
-void handleMusicInput(InputEvent event)
-{
-  if (event == InputEvent::SELECT_PRESS)
-  {
-    music.playPause();
-  }
-
-  else if (event == InputEvent::UP_PRESS)
-  {
-    music.nextTrack();
-  }
-
-  else if (event == InputEvent::DOWN_PRESS)
-  {
-    music.previousTrack();
-  }
-
-  else if (event == InputEvent::BACK_PRESS)
-  {
-    if (music.isPlaying())
-    {
-      music.playPause();
-    }
-
-    currentScreen = Screen::HOME;
-
-    drawMenu();
+    goHome();
   }
 }
 
@@ -400,7 +302,17 @@ void loop()
   {
     music.update();
 
-    handleMusicInput(event);
+    music.handleInput(event);
+
+    if (event == InputEvent::BACK_PRESS)
+    {
+      if (music.isPlaying())
+      {
+        music.playPause();
+      }
+
+      goHome();
+    }
   }
 
   else if (currentScreen == Screen::STOPWATCH)
@@ -408,7 +320,17 @@ void loop()
     // Let the Stopwatch handle its own timing/display.
     stopwatch.update();
 
-    handleStopwatchInput(event);
+    stopwatch.handleInput(event);
+
+    if (event == InputEvent::BACK_PRESS)
+    {
+      if (stopwatch.isRunning())
+      {
+        stopwatch.startPause();
+      }
+
+      goHome();
+    }
   }
 
   else if (currentScreen == Screen::POMODORO)
@@ -417,7 +339,15 @@ void loop()
     // drawing and Focus/Break transitions.
     pomodoro.update();
 
-    handlePomodoroInput(event);
+    pomodoro.handleInput(event);
+
+    if (event == InputEvent::BACK_PRESS)
+    {
+      if (pomodoro.isRunning())
+        pomodoro.startPause();
+
+      goHome();
+    }
   }
 
   else if (currentScreen == Screen::APP)

@@ -5,6 +5,7 @@
 #include <Adafruit_ST7789.h>
 
 #include <UI.h>
+#include <Input.h>
 
 class Stopwatch
 {
@@ -20,6 +21,8 @@ public:
     void drawScreen();
 
     bool isRunning() const;
+
+    void handleInput(InputEvent event);
 
 private:
     Adafruit_ST7789 &tft;
