@@ -3,11 +3,14 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_ST7789.h>
 
+#include <Storage.h>
 #include <UI.h>
+#include <HomeMenu.h>
 #include <Input.h>
 #include <Music.h>
 #include <Stopwatch.h>
 #include <Pomodoro.h>
+#include <AudioPlayer.h>
 
 // =========================
 // Display
@@ -17,24 +20,28 @@ constexpr int TFT_SCLK = 12;
 constexpr int TFT_CS = 6;
 constexpr int TFT_DC = 5;
 constexpr int TFT_RST = 4;
+constexpr int SD_MISO = 13;
 
-SPIClass displaySPI(FSPI);
-Adafruit_ST7789 tft(&displaySPI, TFT_CS, TFT_DC, TFT_RST);
+SPIClass spi(FSPI);
+Storage storage(spi, 10);
+Adafruit_ST7789 tft(TFT_CS, TFT_DC, TFT_RST);
 
 UI ui(tft);
+HomeMenu homeMenu(tft, ui);
 
 // Create app objects
 Stopwatch stopwatch(tft, ui);
 Pomodoro pomodoro(tft, ui);
-Music music(tft, ui);
+AudioPlayer audioPlayer;
+Music music(tft, ui, audioPlayer);
 
 // =========================
 // InputEvents
 // =========================
-constexpr int BTN_UP = 35;
-constexpr int BTN_DOWN = 36;
-constexpr int BTN_SELECT = 37;
-constexpr int BTN_BACK = 38;
+constexpr int BTN_UP = 1;
+constexpr int BTN_DOWN = 2;
+constexpr int BTN_SELECT = 15;
+constexpr int BTN_BACK = 21;
 
 Input input(
     BTN_UP,
@@ -57,74 +64,6 @@ enum class Screen
 Screen currentScreen = Screen::HOME;
 
 // =========================
-// Menu
-// =========================
-const char *menuItems[] = {
-    "Music",
-    "Calendar",
-    "Pomodoro",
-    "Stopwatch",
-    "Password Key",
-    "Settings"};
-
-constexpr int MENU_COUNT =
-    sizeof(menuItems) / sizeof(menuItems[0]);
-
-int selectedItem = 0;
-
-// =========================
-// Draw Home Screen
-// =========================
-void drawMenuItem(int index, bool selected)
-{
-  int y = 75 + (index * 35);
-
-  // Clear only this menu row
-  tft.fillRect(
-      10,
-      y - 7,
-      220,
-      30,
-      Theme::BACKGROUND);
-
-  tft.setTextSize(2);
-
-  if (selected)
-  {
-    tft.fillRoundRect(
-        10,
-        y - 7,
-        220,
-        30,
-        5,
-        Theme::PRIMARY);
-
-    tft.setTextColor(Theme::BACKGROUND);
-    tft.setCursor(25, y);
-    tft.print("> ");
-    tft.print(menuItems[index]);
-  }
-  else
-  {
-    tft.setTextColor(Theme::TEXT);
-    tft.setCursor(25, y);
-    tft.print("  ");
-    tft.print(menuItems[index]);
-  }
-}
-
-void drawMenu()
-{
-  ui.clear();
-  ui.drawHeader("HOME");
-
-  for (int i = 0; i < MENU_COUNT; i++)
-  {
-    drawMenuItem(i, i == selectedItem);
-  }
-}
-
-// =========================
 // Draw Temporary App
 // =========================
 void drawApp()
@@ -135,7 +74,7 @@ void drawApp()
 
   tft.setTextSize(3);
   tft.setCursor(20, 100);
-  tft.println(menuItems[selectedItem]);
+  tft.println("Coming Soon");
 
   tft.setTextSize(2);
   tft.setCursor(20, 160);
@@ -149,98 +88,32 @@ void drawApp()
 void goHome()
 {
   currentScreen = Screen::HOME;
-  drawMenu();
+  homeMenu.draw();
   Serial.println("Returning home");
 }
 
-// =========================
-// Home Input
-// =========================
-void handleHomeInput(InputEvent event)
+void openMusic()
 {
+  currentScreen = Screen::MUSIC;
+  music.drawScreen();
+}
 
-  if (event == InputEvent::UP_PRESS)
-  {
-    int oldItem = selectedItem;
+void openPomodoro()
+{
+  currentScreen = Screen::POMODORO;
+  pomodoro.drawScreen();
+}
 
-    selectedItem--;
+void openStopwatch()
+{
+  currentScreen = Screen::STOPWATCH;
+  stopwatch.drawScreen();
+}
 
-    if (selectedItem < 0)
-    {
-      selectedItem = MENU_COUNT - 1;
-    }
-
-    // Remove old highlight
-    drawMenuItem(oldItem, false);
-
-    // Draw new highlight
-    drawMenuItem(selectedItem, true);
-
-    Serial.print("Selected: ");
-    Serial.println(menuItems[selectedItem]);
-  }
-
-  else if (event == InputEvent::DOWN_PRESS)
-  {
-    int oldItem = selectedItem;
-    selectedItem++;
-
-    if (selectedItem >= MENU_COUNT)
-    {
-      selectedItem = 0;
-    }
-
-    drawMenuItem(oldItem, false);
-    drawMenuItem(selectedItem, true);
-
-    Serial.print("Selected: ");
-    Serial.println(menuItems[selectedItem]);
-  }
-  else if (event == InputEvent::SELECT_HOLD)
-  {
-    Serial.println("SELECT HOLD");
-  }
-
-  else if (event == InputEvent::SELECT_PRESS)
-  {
-
-    Serial.print("Opening: ");
-    Serial.println(menuItems[selectedItem]);
-
-    // Music is menu item 0
-    if (selectedItem == 0)
-    {
-      currentScreen = Screen::MUSIC;
-
-      music.drawScreen();
-    }
-
-    // Pomodoro is menu item 2
-    else if (selectedItem == 2)
-    {
-
-      currentScreen = Screen::POMODORO;
-
-      pomodoro.drawScreen();
-    }
-
-    // Stopwatch is menu item 3
-    else if (selectedItem == 3)
-    {
-
-      currentScreen = Screen::STOPWATCH;
-
-      stopwatch.drawScreen();
-    }
-
-    else
-    {
-
-      currentScreen = Screen::APP;
-
-      drawApp();
-    }
-  }
+void openPlaceholder()
+{
+  currentScreen = Screen::APP;
+  drawApp();
 }
 
 // =========================
@@ -260,29 +133,44 @@ void handleAppInput(InputEvent event)
 // =========================
 void setup()
 {
-
   Serial.begin(115200);
 
   input.begin();
 
-  // Display SPI
-  displaySPI.begin(
+  spi.begin(
       TFT_SCLK,
-      -1,
-      TFT_MOSI,
-      TFT_CS);
+      SD_MISO,
+      TFT_MOSI);
 
   // Display
   tft.init(240, 320);
   tft.setRotation(0);
 
+  Serial.println("Before SD");
+  if (storage.begin())
+  {
+    Serial.println("SD Card mounted");
+  }
+  else
+  {
+    Serial.println("Failed to mount SD Card");
+  }
+
   stopwatch.begin();
   pomodoro.begin();
   music.begin();
+  audioPlayer.begin();
 
-  drawMenu();
+  homeMenu.draw();
 
   Serial.println("HELIX UI ready");
+
+  std::vector<String> files;
+
+  if (storage.listFilesRecursive("/Music", files))
+  {
+    music.setPlaylist(files);
+  }
 }
 
 // =========================
@@ -291,54 +179,68 @@ void setup()
 void loop()
 {
   InputEvent event = input.getEvent();
+  audioPlayer.update();
 
-  // Handle input depending on current screen
-  if (currentScreen == Screen::HOME)
+  switch (currentScreen)
   {
-    handleHomeInput(event);
+  case Screen::HOME:
+  {
+    HomeAction action = homeMenu.handleInput(event);
+
+    switch (action)
+    {
+    case HomeAction::OPEN_MUSIC:
+      openMusic();
+      break;
+
+    case HomeAction::OPEN_POMODORO:
+      openPomodoro();
+      break;
+
+    case HomeAction::OPEN_STOPWATCH:
+      openStopwatch();
+      break;
+
+    case HomeAction::OPEN_PLACEHOLDER:
+      openPlaceholder();
+      break;
+
+    case HomeAction::NONE:
+    default:
+      break;
+    }
+
+    break;
   }
 
-  else if (currentScreen == Screen::MUSIC)
-  {
+  case Screen::MUSIC:
     music.update();
-
     music.handleInput(event);
 
     if (event == InputEvent::BACK_PRESS)
     {
       if (music.isPlaying())
-      {
         music.playPause();
-      }
 
       goHome();
     }
-  }
+    break;
 
-  else if (currentScreen == Screen::STOPWATCH)
-  {
-    // Let the Stopwatch handle its own timing/display.
+  case Screen::STOPWATCH:
     stopwatch.update();
-
     stopwatch.handleInput(event);
 
     if (event == InputEvent::BACK_PRESS)
     {
       if (stopwatch.isRunning())
-      {
         stopwatch.startPause();
-      }
 
       goHome();
     }
-  }
+    break;
 
-  else if (currentScreen == Screen::POMODORO)
-  {
-    // Pomodoro handles timing, countdown,
-    // drawing and Focus/Break transitions.
+  case Screen::POMODORO:
     pomodoro.update();
-
     pomodoro.handleInput(event);
 
     if (event == InputEvent::BACK_PRESS)
@@ -348,10 +250,10 @@ void loop()
 
       goHome();
     }
-  }
+    break;
 
-  else if (currentScreen == Screen::APP)
-  {
+  case Screen::APP:
     handleAppInput(event);
+    break;
   }
 }

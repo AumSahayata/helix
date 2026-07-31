@@ -1,44 +1,118 @@
 # Helix Roadmap
 
-## Version 0.1
-
-### Core
-
-* [x] ESP32 bring-up
-* [x] Serial output
-* [x] Display initialization
-* [x] Button input
+This roadmap tracks the firmware evolution of Helix.
 
 ---
 
-## Version 0.2
+# Version 0.1 — Hardware Bring-up ✅
 
-* [ ] SD card support
-* [ ] File browser
-* [ ] Audio playback
-* [ ] Volume control
-
----
-
-## Version 0.3
-
-* [ ] Home screen
-* [ ] Music player UI
-* [ ] Battery monitoring
-* [ ] Sleep mode
+- [x] ESP32-S3 setup
+- [x] Serial debugging
+- [x] ST7789 display
+- [x] Basic button input
 
 ---
 
-## Future Ideas
+# Version 0.2 — Firmware Foundation ✅
 
-These are ideas, not commitments.
+## Input
 
-* Bluetooth audio
-* To-do list
-* Timer
-* Stopwatch
-* Calendar
-* Companion desktop app
-* Android companion app
-* Custom PCB
-* Custom enclosure
+- [x] Centralized Input Manager
+- [x] Debouncing
+- [x] InputEvent architecture
+- [x] Hold detection
+- [ ] Repeat events
+
+## UI
+
+- [x] Shared UI class
+- [x] Theme system
+- [x] Partial redraws
+- [x] Home menu
+- [x] HomeMenu component
+- [x] Shared widgets
+
+## Applications
+
+- [x] Music prototype
+- [x] Pomodoro
+- [x] Stopwatch
+
+## Architecture
+
+- [x] Modular project structure
+- [x] App-owned input
+- [x] Router-based navigation
+
+---
+
+# Version 0.3 — Real Music Player (Current)
+
+## Storage
+
+- [ ] SD card initialization
+- [ ] File browser
+- [ ] Playlist generation
+
+## Audio
+
+- [ ] I2S driver
+- [ ] PCM5102A output
+- [ ] MP3 decoding
+- [ ] WAV support
+
+## Music
+
+- [ ] Volume control
+- [ ] Shuffle
+- [ ] Repeat
+- [ ] Album artwork
+- [ ] Metadata parsing
+
+---
+
+# Version 0.4 — Device Features
+
+- [ ] Settings application
+- [ ] Battery monitoring
+- [ ] Brightness control
+- [ ] Sleep mode
+- [ ] Power management
+
+---
+
+# Version 0.5 — Productivity Apps
+
+- [ ] Calendar
+- [ ] Password Manager
+- [ ] Notes
+- [ ] Timer improvements
+- [ ] Stopwatch improvements
+
+---
+
+# Version 0.6 — Polish
+
+- [ ] Help overlay
+- [ ] Animations
+- [ ] Theme customization
+- [ ] Performance optimization
+- [ ] Boot animation
+- [ ] Error handling
+
+---
+
+# Long-Term Ideas
+
+These are exploratory ideas and not committed features.
+
+- Bluetooth Audio
+- BLE Companion App
+- Wi-Fi Synchronization
+- Weather
+- Calculator
+- File Explorer
+- Plugin System
+- Custom PCB
+- Custom Acrylic Enclosure
+- 3D Printed Case

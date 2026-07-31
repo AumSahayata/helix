@@ -101,10 +101,10 @@ All buttons use the ESP32's internal pull-up resistors (`INPUT_PULLUP`).
 
 | Button | ESP32-S3 |
 |--------|-----------|
-| UP | GPIO35 |
-| DOWN | GPIO36 |
-| SELECT | GPIO37 |
-| BACK | GPIO38 |
+| UP | GPIO1 |
+| DOWN | GPIO2 |
+| SELECT | GPIO15 |
+| BACK | GPIO121 |
 
 Each button is wired:
 
@@ -117,3 +117,66 @@ Released:
 Pressed:
 
     GPIO = LOW
+
+# Reserved Pins
+
+These pins are reserved by the ESP32-S3 hardware and **must not** be reassigned.
+
+## Flash Memory
+
+GPIO26–GPIO32
+
+Used internally by the onboard Flash memory.
+
+❌ Do not use.
+
+---
+
+## Octal PSRAM
+
+GPIO33–GPIO37
+
+Used by the onboard PSRAM.
+
+❌ Do not use.
+
+---
+
+## Boot Strapping Pins
+
+| GPIO | Notes |
+|------|-------|
+| GPIO0 | Boot mode selection |
+| GPIO3 | Strapping pin |
+| GPIO45 | Strapping pin |
+| GPIO46 | Strapping pin |
+
+These pins determine boot behavior.
+
+Avoid using them for buttons or external peripherals unless you fully understand the boot requirements.
+
+---
+
+## USB
+
+| GPIO | Function |
+|------|----------|
+| GPIO19 | USB D- |
+| GPIO20 | USB D+ |
+
+Do not reuse these pins if USB Serial or native USB functionality is required.
+
+---
+
+## UART0
+
+| GPIO | Function |
+|------|----------|
+| GPIO43 | TX0 |
+| GPIO44 | RX0 |
+
+Used for programming and Serial Monitor.
+
+Avoid using them for application hardware.
+
+---

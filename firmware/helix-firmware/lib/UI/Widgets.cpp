@@ -116,3 +116,92 @@ void Widgets::drawProgressFill(
         height - 4,
         color);
 }
+
+void MarqueeText::draw(
+    Adafruit_ST7789 &tft,
+    int16_t x,
+    int16_t y,
+    int16_t width,
+    const String &text,
+    uint16_t color,
+    uint16_t background)
+{
+    if (text != currentText)
+    {
+        currentText = text;
+
+        offset = 0;
+
+        state = State::PauseStart;
+
+        lastUpdate = millis();
+    }
+
+    int16_t bx, by;
+    uint16_t textWidth, textHeight;
+
+    tft.getTextBounds(
+        text,
+        0,
+        0,
+        &bx,
+        &by,
+        &textWidth,
+        &textHeight);
+
+    if (textWidth <= width)
+    {
+        tft.fillRect(
+            x,
+            y,
+            width,
+            textHeight + 2,
+            background);
+
+        tft.setCursor(x, y);
+        tft.setTextColor(color);
+        tft.print(text);
+
+        return;
+    }
+
+    switch (state)
+    {
+    case State::PauseStart:
+
+        if (millis() - lastUpdate >= 1000)
+        {
+            state = State::ScrollLeft;
+            lastUpdate = millis();
+        }
+
+        break;
+
+    case State::ScrollLeft:
+
+        if (millis() - lastUpdate >= 30)
+        {
+            offset++;
+
+            lastUpdate = millis();
+        }
+
+        break;
+
+    default:
+        break;
+    }
+
+    tft.fillRect(
+        x,
+        y,
+        width,
+        textHeight + 2,
+        background);
+
+    tft.setTextColor(color);
+
+    tft.setCursor(x - offset, y);
+
+    tft.print(text);
+}

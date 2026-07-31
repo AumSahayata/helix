@@ -2,16 +2,21 @@
 
 #include <Arduino.h>
 #include <Adafruit_ST7789.h>
+#include <vector>
 
 #include <UI.h>
 #include <Input.h>
+#include <Widgets.h>
+#include <AudioPlayer.h>
 
-struct Track
+struct Song
 {
-    const char *title;
-    const char *artist;
+    String title;
+    String path;
+    String artist = "Unknown";
+    uint32_t duration = 0;
 
-    uint32_t duration;
+    bool metadataLoaded = false;
 };
 
 class Music
@@ -19,7 +24,8 @@ class Music
 public:
     Music(
         Adafruit_ST7789 &display,
-        UI &ui);
+        UI &ui,
+        AudioPlayer &audio);
 
     void begin();
 
@@ -37,18 +43,16 @@ public:
 
     void handleInput(InputEvent event);
 
+    void setPlaylist(const std::vector<String> &files);
+
 private:
     Adafruit_ST7789 &tft;
 
+    AudioPlayer& audio;
+
     UI &ui;
 
-    static constexpr int TRACK_COUNT = 3;
-
-    Track playlist[TRACK_COUNT];
-
     int currentTrack = 0;
-
-    bool playing = false;
 
     uint32_t elapsed = 0;
 
@@ -58,9 +62,13 @@ private:
 
     uint32_t lastDraw = 0;
 
-    static constexpr uint32_t REFRESH_MS = 200;
+    static constexpr uint32_t REFRESH_MS = 33;
 
-    void loadFakePlaylist();
+    std::vector<Song> playlist;
+
+    MarqueeText titleMarquee;
+
+    void playCurrentTrack();
 
     void drawAlbumArt();
 

@@ -3,36 +3,16 @@
 
 Music::Music(
     Adafruit_ST7789 &display,
-    UI &uiManager)
+    UI &uiManager,
+    AudioPlayer &player)
     : tft(display),
-      ui(uiManager)
+      ui(uiManager),
+      audio(player)
 {
-}
-
-void Music::loadFakePlaylist()
-{
-    playlist[0] =
-        {
-            "Midnight Drive",
-            "HOME",
-            222000};
-
-    playlist[1] =
-        {
-            "Lost Signals",
-            "Helix Studio",
-            178000};
-
-    playlist[2] =
-        {
-            "Aurora",
-            "Synth Lab",
-            255000};
 }
 
 void Music::begin()
 {
-    loadFakePlaylist();
 }
 
 void Music::drawScreen()
@@ -62,14 +42,14 @@ void Music::drawScreen()
 
 void Music::update()
 {
-    if (!playing)
+    if (!audio.isPlaying())
         return;
 
-    Track &track = playlist[currentTrack];
+    Song &song = playlist[currentTrack];
 
     elapsed = storedElapsed + (millis() - startTime);
 
-    if (elapsed >= track.duration)
+    if (elapsed >= song.duration)
     {
         nextTrack();
 
@@ -77,8 +57,7 @@ void Music::update()
     }
 
     if (
-        millis() - lastDraw >=
-        REFRESH_MS)
+        millis() - lastDraw >= REFRESH_MS)
     {
         drawElapsedTime();
 
@@ -89,7 +68,7 @@ void Music::update()
             200,
             10,
             elapsed,
-            track.duration,
+            song.duration,
             Theme::PRIMARY,
             Theme::BACKGROUND);
         drawPlaybackState();
@@ -100,17 +79,15 @@ void Music::update()
 
 void Music::playPause()
 {
-    if (!playing)
-    {
-        startTime = millis();
+    Song &song = playlist[currentTrack];
 
-        playing = true;
+    if (!audio.isPlaying())
+    {
+        playCurrentTrack();
     }
     else
     {
-        storedElapsed = elapsed;
-
-        playing = false;
+        audio.stop();
     }
 
     drawPlaybackState();
@@ -118,35 +95,44 @@ void Music::playPause()
 
 void Music::nextTrack()
 {
+
+    if (playlist.empty())
+    {
+        return;
+    }
+
     currentTrack++;
 
-    if (currentTrack >= TRACK_COUNT)
+    if (currentTrack >= playlist.size())
     {
         currentTrack = 0;
     }
 
-    elapsed = 0;
-
-    storedElapsed = 0;
-
-    startTime = millis();
-
-    drawTrack();
-
-    drawElapsedTime();
-
-    drawProgressFill();
-
-    drawPlaybackState();
+    playCurrentTrack();
 }
 
 void Music::previousTrack()
 {
+    if (playlist.empty())
+    {
+        return;
+    }
+
+    if (currentTrack == 0)
+    {
+        currentTrack = playlist.size() - 1;
+    }
+    else
+    {
+        currentTrack--;
+    }
+
+    playCurrentTrack();
 }
 
 bool Music::isPlaying() const
 {
-    return playing;
+    return audio.isPlaying();
 }
 
 void Music::drawAlbumArt()
@@ -177,8 +163,7 @@ void Music::drawAlbumArt()
 
 void Music::drawTrack()
 {
-    Track &track =
-        playlist[currentTrack];
+    Song &song = playlist[currentTrack];
 
     tft.fillRect(
         20,
@@ -197,11 +182,22 @@ void Music::drawTrack()
         20,
         195);
 
-    tft.print(
-        Widgets::fitText(
-            tft,
-            track.title,
-            200));
+    if (!playlist.empty())
+    {
+        // titleMarquee.draw(
+        //     tft,
+        //     20,
+        //     195,
+        //     200,
+        //     song.title,
+        //     Theme::TEXT,
+        //     Theme::BACKGROUND);
+        tft.print(Widgets::fitText(tft, song.title.c_str(), 180));
+    }
+    else
+    {
+        tft.print("No Music");
+    }
 
     // Artist
     tft.setTextSize(1);
@@ -213,7 +209,7 @@ void Music::drawTrack()
         20,
         220);
 
-    tft.print(track.artist);
+    tft.print(song.artist);
 }
 
 void Music::drawPlaybackState()
@@ -222,7 +218,7 @@ void Music::drawPlaybackState()
 
     tft.setTextSize(1);
 
-    if (playing)
+    if (audio.isPlaying())
     {
         tft.setTextColor(
             Theme::PRIMARY,
@@ -258,8 +254,7 @@ void Music::drawProgressOutline()
 
 void Music::drawElapsedTime()
 {
-    Track &track =
-        playlist[currentTrack];
+    Song &song = playlist[currentTrack];
 
     char elapsedText[6];
 
@@ -270,7 +265,7 @@ void Music::drawElapsedTime()
         elapsedText);
 
     Widgets::formatTime(
-        track.duration,
+        song.duration,
         durationText);
 
     tft.setTextSize(1);
@@ -288,7 +283,7 @@ void Music::drawElapsedTime()
 
 void Music::drawProgressFill()
 {
-    Track &track = playlist[currentTrack];
+    Song &song = playlist[currentTrack];
 
     Widgets::drawProgressFill(
         tft,
@@ -297,9 +292,30 @@ void Music::drawProgressFill()
         200,
         10,
         elapsed,
-        track.duration,
+        song.duration,
         Theme::PRIMARY,
         Theme::BACKGROUND);
+}
+
+void Music::playCurrentTrack()
+{
+    if (playlist.empty())
+    {
+        return;
+    }
+
+    Song &song = playlist[currentTrack];
+
+    audio.play(song.path);
+
+    elapsed = 0;
+    storedElapsed = 0;
+    startTime = millis();
+
+    drawTrack();
+    drawElapsedTime();
+    drawProgressFill();
+    drawPlaybackState();
 }
 
 void Music::handleInput(InputEvent event)
@@ -328,5 +344,36 @@ void Music::handleInput(InputEvent event)
 
     default:
         break;
+    }
+}
+
+void Music::setPlaylist(const std::vector<String> &files)
+{
+    playlist.clear();
+
+    for (const auto &file : files)
+    {
+        if (file.endsWith(".mp3") ||
+            file.endsWith(".wav"))
+        {
+            Song song;
+
+            song.path = file;
+
+            int lastSlash = file.lastIndexOf('/');
+
+            if (lastSlash >= 0)
+            {
+                song.title = file.substring(lastSlash + 1);
+            }
+            else
+            {
+                song.title = file;
+            }
+            song.artist = "Unknown Artist";
+            song.duration = 180000; // temporary 3 min
+
+            playlist.push_back(song);
+        }
     }
 }
