@@ -20,6 +20,9 @@ Rather than replacing a smartphone, Helix is designed as a dedicated companion f
 - ✅ ESP32-S3 firmware running with PlatformIO
 - ✅ ST7789 display
 - ✅ Physical button input
+- ✅ Read SD card
+- ✅ Play music
+- ✅ Stopwatch and Pomodoro timer
 - 🚧 Menu and UI system
 - 🚧 Hardware integration
 
