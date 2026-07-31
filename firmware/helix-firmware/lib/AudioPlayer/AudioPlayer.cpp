@@ -2,7 +2,7 @@
 #include <Audio.h>
 #include <SD.h>
 
-static Audio *audio = nullptr;
+AudioPlayer *AudioPlayer::instance_ = nullptr;
 
 namespace
 {
@@ -11,60 +11,132 @@ namespace
     constexpr int I2S_DOUT = 18;
 }
 
+AudioPlayer::AudioPlayer()
+{
+    instance_ = this;
+}
+
+AudioPlayer::~AudioPlayer()
+{
+    delete audio_;
+    audio_ = nullptr;
+
+    if (instance_ == this)
+    {
+        instance_ = nullptr;
+    }
+}
+
 void AudioPlayer::begin()
 {
-    if (!audio)
+    if (!audio_)
     {
-        audio = new Audio();
+        audio_ = new Audio();
     }
 
-    audio->setPinout(
+    audio_->setPinout(
         I2S_BCLK,
         I2S_LRCK,
-        I2S_DOUT
-    );
-    audio->setVolume(22);
+        I2S_DOUT);
+    audio_->setVolume(12);
 }
 
 bool AudioPlayer::play(const String &path)
 {
-    Serial.print("Opening: ");
-    Serial.println(path);
+    bool ok = audio_->connecttoFS(SD, path.c_str());
 
-    bool ok = audio->connecttoFS(SD, path.c_str());
-
-    Serial.print("Result: ");
-    Serial.println(ok);
-
-    playing = ok;
+    if (ok)
+    {
+        playbackState_ = PlaybackState::Playing;
+    }
+    else
+    {
+        playbackState_ = PlaybackState::Stopped;
+    }
 
     return ok;
 }
 
 void AudioPlayer::update()
 {
-    if (audio)
+    if (audio_)
     {
-        audio->loop();
+        audio_->loop();
     }
 }
 
 void AudioPlayer::stop()
 {
-    playing = false;
+    playbackState_ = PlaybackState::Stopped;
 }
 
 void AudioPlayer::pause()
 {
-    playing = false;
+    if (playbackState_ != PlaybackState::Playing)
+    {
+        return;
+    }
+
+    audio_->pauseResume();
+    playbackState_ = PlaybackState::Paused;
 }
 
 void AudioPlayer::resume()
 {
-    playing = true;
+    if (playbackState_ != PlaybackState::Paused)
+    {
+        return;
+    }
+
+    audio_->pauseResume();
+    playbackState_ = PlaybackState::Playing;
 }
 
 bool AudioPlayer::isPlaying() const
 {
-    return playing;
+    return playbackState_ == PlaybackState::Playing;
+}
+
+void AudioPlayer::setTrackFinishedCallback(TrackFinishedCallback callback)
+{
+    trackFinishedCallback_ = std::move(callback);
+}
+
+void AudioPlayer::handleTrackFinished()
+{
+    playbackState_ = PlaybackState::Stopped;
+
+    if (trackFinishedCallback_)
+    {
+        trackFinishedCallback_();
+    }
+}
+
+void AudioPlayer::notifyTrackFinished()
+{
+    if (instance_)
+    {
+        instance_->handleTrackFinished();
+    }
+}
+
+void audio_eof_mp3(const char *info)
+{
+    (void)info;
+    AudioPlayer::notifyTrackFinished();
+}
+
+AudioPlayer::PlaybackState AudioPlayer::getPlaybackState() const
+{
+    return playbackState_;
+}
+
+uint32_t AudioPlayer::getCurrentTime() const
+{
+    return audio_ ? audio_->getAudioCurrentTime() : 0;
+}
+
+uint32_t AudioPlayer::getDuration() const
+{
+    return audio_ ? audio_->getAudioFileDuration() : 0;
 }

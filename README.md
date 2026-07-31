@@ -31,8 +31,8 @@ Rather than replacing a smartphone, Helix is designed as a dedicated companion f
 - Bluetooth media controller
 - Calendar
 - To-do list
-- Pomodoro timer
-- Stopwatch
+- Bluetooth music player
+- Password Key
 - More to come ...
 
 ## Hardware

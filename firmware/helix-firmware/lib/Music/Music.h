@@ -56,10 +56,6 @@ private:
 
     uint32_t elapsed = 0;
 
-    uint32_t startTime = 0;
-
-    uint32_t storedElapsed = 0;
-
     uint32_t lastDraw = 0;
 
     static constexpr uint32_t REFRESH_MS = 33;

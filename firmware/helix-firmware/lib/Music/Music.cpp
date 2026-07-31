@@ -9,6 +9,8 @@ Music::Music(
       ui(uiManager),
       audio(player)
 {
+    audio.setTrackFinishedCallback([this]()
+                                   { nextTrack(); });
 }
 
 void Music::begin()
@@ -47,14 +49,7 @@ void Music::update()
 
     Song &song = playlist[currentTrack];
 
-    elapsed = storedElapsed + (millis() - startTime);
-
-    if (elapsed >= song.duration)
-    {
-        nextTrack();
-
-        return;
-    }
+    elapsed = audio.getCurrentTime() * 1000;
 
     if (
         millis() - lastDraw >= REFRESH_MS)
@@ -79,15 +74,19 @@ void Music::update()
 
 void Music::playPause()
 {
-    Song &song = playlist[currentTrack];
-
-    if (!audio.isPlaying())
+    switch (audio.getPlaybackState())
     {
+    case AudioPlayer::PlaybackState::Stopped:
         playCurrentTrack();
-    }
-    else
-    {
-        audio.stop();
+        break;
+
+    case AudioPlayer::PlaybackState::Playing:
+        audio.pause();
+        break;
+
+    case AudioPlayer::PlaybackState::Paused:
+        audio.resume();
+        break;
     }
 
     drawPlaybackState();
@@ -95,7 +94,6 @@ void Music::playPause()
 
 void Music::nextTrack()
 {
-
     if (playlist.empty())
     {
         return;
@@ -265,7 +263,7 @@ void Music::drawElapsedTime()
         elapsedText);
 
     Widgets::formatTime(
-        song.duration,
+        audio.getDuration() * 1000,
         durationText);
 
     tft.setTextSize(1);
@@ -292,7 +290,7 @@ void Music::drawProgressFill()
         200,
         10,
         elapsed,
-        song.duration,
+        audio.getDuration() * 1000,
         Theme::PRIMARY,
         Theme::BACKGROUND);
 }
@@ -309,8 +307,6 @@ void Music::playCurrentTrack()
     audio.play(song.path);
 
     elapsed = 0;
-    storedElapsed = 0;
-    startTime = millis();
 
     drawTrack();
     drawElapsedTime();
