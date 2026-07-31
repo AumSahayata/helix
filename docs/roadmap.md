@@ -50,15 +50,15 @@ This roadmap tracks the firmware evolution of Helix.
 
 ## Storage
 
-- [ ] SD card initialization
+- [x] SD card initialization
 - [ ] File browser
-- [ ] Playlist generation
+- [x] Playlist generation
 
 ## Audio
 
-- [ ] I2S driver
-- [ ] PCM5102A output
-- [ ] MP3 decoding
+- [x] I2S driver
+- [x] PCM5102A output
+- [x] MP3 decoding
 - [ ] WAV support
 
 ## Music
