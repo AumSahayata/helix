@@ -205,3 +205,27 @@ void MarqueeText::draw(
 
     tft.print(text);
 }
+
+void Widgets::drawOverlayBox(
+    Adafruit_ST7789 &tft,
+    int16_t x,
+    int16_t y,
+    int16_t width,
+    int16_t height)
+{
+    tft.fillRoundRect(
+        x,
+        y,
+        width,
+        height,
+        8,
+        ST77XX_BLACK);
+
+    tft.drawRoundRect(
+        x,
+        y,
+        width,
+        height,
+        8,
+        ST77XX_WHITE);
+}

@@ -70,6 +70,15 @@ void Music::update()
 
         lastDraw = millis();
     }
+
+    if (showVolumeOverlay_ &&
+        millis() - volumeOverlayStart_ >= 1500)
+    {
+        showVolumeOverlay_ = false;
+
+        // Force a redraw of the normal music screen
+        drawScreen();
+    }
 }
 
 void Music::playPause()
@@ -295,6 +304,53 @@ void Music::drawProgressFill()
         Theme::BACKGROUND);
 }
 
+void Music::drawVolumeOverlay()
+{
+    constexpr int16_t width = 160;
+    constexpr int16_t height = 70;
+
+    constexpr int16_t x = (240 - width) / 2;
+    constexpr int16_t y = (320 - height) / 2;
+
+    Widgets::drawOverlayBox(
+        tft,
+        x,
+        y,
+        width,
+        height);
+
+    tft.setTextColor(Theme::TEXT);
+    tft.setTextSize(2);
+
+    tft.setCursor(x + 40, y + 10);
+    tft.print("Volume");
+
+    Widgets::drawProgressOutline(
+        tft,
+        x + 15,
+        y + 40,
+        130,
+        8,
+        Theme::PRIMARY);
+    Widgets::drawProgressFill(
+        tft,
+        x + 15,
+        y + 40,
+        130,
+        8,
+        audio.getVolume(),
+        100,
+        Theme::PRIMARY,
+        Theme::BACKGROUND);
+
+    tft.setTextSize(1);
+    tft.setTextColor(Theme::TEXT);
+
+    tft.setCursor(x + 50, y + 55);
+    tft.print(audio.getVolume());
+    tft.print("%");
+}
+
 void Music::playCurrentTrack()
 {
     if (playlist.empty())
@@ -327,7 +383,13 @@ void Music::handleInput(InputEvent event)
         break;
 
     case InputEvent::UP_HOLD:
-        // volumeUp();
+        audio.volumeUp();
+
+        showVolumeOverlay_ = true;
+        volumeOverlayStart_ = millis();
+
+        drawVolumeOverlay();
+        drawPlaybackState();
         break;
 
     case InputEvent::DOWN_PRESS:
@@ -335,7 +397,13 @@ void Music::handleInput(InputEvent event)
         break;
 
     case InputEvent::DOWN_HOLD:
-        // volumeDown();
+        audio.volumeDown();
+
+        showVolumeOverlay_ = true;
+        volumeOverlayStart_ = millis();
+
+        drawVolumeOverlay();
+        drawPlaybackState();
         break;
 
     default:

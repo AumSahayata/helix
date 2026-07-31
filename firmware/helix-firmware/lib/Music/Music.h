@@ -58,6 +58,10 @@ private:
 
     uint32_t lastDraw = 0;
 
+    bool showVolumeOverlay_ = false;
+
+    uint32_t volumeOverlayStart_ = 0;
+
     static constexpr uint32_t REFRESH_MS = 33;
 
     std::vector<Song> playlist;
@@ -79,4 +83,6 @@ private:
     void drawProgressFill();
 
     void drawPlaybackState();
+
+    void drawVolumeOverlay();
 };

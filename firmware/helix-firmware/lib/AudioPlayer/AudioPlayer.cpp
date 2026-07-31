@@ -37,8 +37,10 @@ void AudioPlayer::begin()
     audio_->setPinout(
         I2S_BCLK,
         I2S_LRCK,
-        I2S_DOUT);
-    audio_->setVolume(12);
+        I2S_DOUT
+    );
+
+    audio_->setVolume((volumePercent_ * 21) / 100);
 }
 
 bool AudioPlayer::play(const String &path)
@@ -90,6 +92,47 @@ void AudioPlayer::resume()
 
     audio_->pauseResume();
     playbackState_ = PlaybackState::Playing;
+}
+
+void AudioPlayer::setVolume(uint8_t percent)
+{
+    if (percent > 100)
+    {
+        percent = 100;
+    }
+
+    volumePercent_ = percent;
+
+    if (audio_)
+    {
+        audio_->setVolume((volumePercent_ * 21) / 100);
+    }
+}
+
+uint8_t AudioPlayer::getVolume() const
+{
+    return volumePercent_;
+}
+
+void AudioPlayer::volumeUp()
+{
+    if (volumePercent_ >= 100)
+    {
+        return;
+    }
+
+    setVolume(volumePercent_ + 5);
+}
+
+void AudioPlayer::volumeDown()
+{
+    if (volumePercent_ <= 5)
+    {
+        setVolume(0);
+        return;
+    }
+
+    setVolume(volumePercent_ - 5);
 }
 
 bool AudioPlayer::isPlaying() const

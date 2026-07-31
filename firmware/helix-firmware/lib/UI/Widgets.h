@@ -32,6 +32,13 @@ namespace Widgets
         uint32_t maxValue,
         uint16_t color,
         uint16_t background);
+
+    void drawOverlayBox(
+        Adafruit_ST7789 &tft,
+        int16_t x,
+        int16_t y,
+        int16_t width,
+        int16_t height);
 }
 
 class MarqueeText

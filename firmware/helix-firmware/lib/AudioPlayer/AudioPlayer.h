@@ -32,6 +32,14 @@ public:
 
     bool isPlaying() const;
 
+    void setVolume(uint8_t percent);
+
+    uint8_t getVolume() const;
+
+    void volumeUp();
+
+    void volumeDown();
+
     using TrackFinishedCallback = std::function<void()>;
 
     void setTrackFinishedCallback(TrackFinishedCallback callback);
@@ -47,6 +55,8 @@ public:
 private:
     PlaybackState playbackState_ = PlaybackState::Stopped;
 
+    uint8_t volumePercent_ = 50;
+
     Audio *audio_ = nullptr;
 
     static AudioPlayer *instance_;
@@ -54,6 +64,4 @@ private:
     TrackFinishedCallback trackFinishedCallback_;
 
     void handleTrackFinished();
-
-    uint8_t volume_ = 12;
 };
