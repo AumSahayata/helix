@@ -40,7 +40,7 @@ void AudioPlayer::begin()
         I2S_DOUT
     );
 
-    audio_->setVolume((volumePercent_ * 21) / 100);
+    setVolume(volumePercent_);
 }
 
 bool AudioPlayer::play(const String &path)

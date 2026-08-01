@@ -4,10 +4,11 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_ST7789.h>
 
+#include <App.h>
 #include <UI.h>
 #include <Input.h>
 
-class Stopwatch
+class Stopwatch : public App
 {
 public:
     Stopwatch(Adafruit_ST7789 &display, UI &ui);
@@ -16,13 +17,12 @@ public:
 
     void startPause();
     void reset();
-    void update();
-
-    void drawScreen();
 
     bool isRunning() const;
 
-    void handleInput(InputEvent event);
+    void draw() override;
+    void update() override;
+    void handleInput(InputEvent event) override;
 
 private:
     Adafruit_ST7789 &tft;

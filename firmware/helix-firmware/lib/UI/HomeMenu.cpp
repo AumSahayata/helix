@@ -77,6 +77,7 @@ void HomeMenu::drawMenuItem(
     int index,
     bool selected)
 {
+
     int y = 75 + (index * 35);
 
     // Clear only this menu row

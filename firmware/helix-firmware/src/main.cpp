@@ -11,6 +11,7 @@
 #include <Stopwatch.h>
 #include <Pomodoro.h>
 #include <AudioPlayer.h>
+#include <SettingsApp.h>
 
 // =========================
 // Display
@@ -34,6 +35,7 @@ Stopwatch stopwatch(tft, ui);
 Pomodoro pomodoro(tft, ui);
 AudioPlayer audioPlayer;
 Music music(tft, ui, audioPlayer);
+SettingsApp settingsApp(tft, ui);
 
 // =========================
 // InputEvents
@@ -49,19 +51,7 @@ Input input(
     BTN_SELECT,
     BTN_BACK);
 
-// =========================
-// Screens
-// =========================
-enum class Screen
-{
-  HOME,
-  APP,
-  MUSIC,
-  POMODORO,
-  STOPWATCH
-};
-
-Screen currentScreen = Screen::HOME;
+App *currentApp = nullptr;
 
 // =========================
 // Draw Temporary App
@@ -87,33 +77,16 @@ void drawApp()
 
 void goHome()
 {
-  currentScreen = Screen::HOME;
+  currentApp = nullptr;
   homeMenu.draw();
+
   Serial.println("Returning home");
 }
 
-void openMusic()
+void openApp(App &app)
 {
-  currentScreen = Screen::MUSIC;
-  music.drawScreen();
-}
-
-void openPomodoro()
-{
-  currentScreen = Screen::POMODORO;
-  pomodoro.drawScreen();
-}
-
-void openStopwatch()
-{
-  currentScreen = Screen::STOPWATCH;
-  stopwatch.drawScreen();
-}
-
-void openPlaceholder()
-{
-  currentScreen = Screen::APP;
-  drawApp();
+  currentApp = &app;
+  currentApp->draw();
 }
 
 // =========================
@@ -146,20 +119,13 @@ void setup()
   tft.init(240, 320);
   tft.setRotation(0);
 
-  Serial.println("Before SD");
-  if (storage.begin())
-  {
-    Serial.println("SD Card mounted");
-  }
-  else
-  {
-    Serial.println("Failed to mount SD Card");
-  }
+  storage.begin();
+  audioPlayer.begin();
 
   stopwatch.begin();
   pomodoro.begin();
   music.begin();
-  audioPlayer.begin();
+  settingsApp.begin();
 
   homeMenu.draw();
 
@@ -179,30 +145,29 @@ void setup()
 void loop()
 {
   InputEvent event = input.getEvent();
+
   audioPlayer.update();
 
-  switch (currentScreen)
-  {
-  case Screen::HOME:
+  if (currentApp == nullptr)
   {
     HomeAction action = homeMenu.handleInput(event);
 
     switch (action)
     {
     case HomeAction::OPEN_MUSIC:
-      openMusic();
+      openApp(music);
       break;
 
     case HomeAction::OPEN_POMODORO:
-      openPomodoro();
+      openApp(pomodoro);
       break;
 
     case HomeAction::OPEN_STOPWATCH:
-      openStopwatch();
+      openApp(stopwatch);
       break;
 
     case HomeAction::OPEN_PLACEHOLDER:
-      openPlaceholder();
+      openApp(settingsApp);
       break;
 
     case HomeAction::NONE:
@@ -210,50 +175,40 @@ void loop()
       break;
     }
 
-    break;
+    return;
   }
 
-  case Screen::MUSIC:
-    music.update();
-    music.handleInput(event);
+  currentApp->update();
+  currentApp->handleInput(event);
 
-    if (event == InputEvent::BACK_PRESS)
+  if (event == InputEvent::BACK_PRESS)
+  {
+    // Temporary app-specific cleanup
+
+    if (currentApp == &music)
     {
       if (music.isPlaying())
+      {
         music.playPause();
-
-      goHome();
+      }
     }
-    break;
 
-  case Screen::STOPWATCH:
-    stopwatch.update();
-    stopwatch.handleInput(event);
-
-    if (event == InputEvent::BACK_PRESS)
+    if (currentApp == &stopwatch)
     {
       if (stopwatch.isRunning())
+      {
         stopwatch.startPause();
-
-      goHome();
+      }
     }
-    break;
 
-  case Screen::POMODORO:
-    pomodoro.update();
-    pomodoro.handleInput(event);
-
-    if (event == InputEvent::BACK_PRESS)
+    if (currentApp == &pomodoro)
     {
       if (pomodoro.isRunning())
+      {
         pomodoro.startPause();
-
-      goHome();
+      }
     }
-    break;
 
-  case Screen::APP:
-    handleAppInput(event);
-    break;
+    goHome();
   }
 }

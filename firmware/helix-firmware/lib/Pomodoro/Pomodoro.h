@@ -4,24 +4,24 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_ST7789.h>
 
+#include <App.h>
 #include <UI.h>
 #include <Input.h>
 
-class Pomodoro
+class Pomodoro: public App
 {
 public:
     Pomodoro(Adafruit_ST7789 &display, UI &ui);
 
-    void begin();
-
-    void drawScreen();
     void startPause();
     void reset();
-    void update();
 
     bool isRunning() const;
 
-    void handleInput(InputEvent event);
+    void begin() override;
+    void draw() override;
+    void update() override;
+    void handleInput(InputEvent event) override;
 
 private:
     enum class Mode

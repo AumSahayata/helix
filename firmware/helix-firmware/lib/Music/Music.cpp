@@ -10,14 +10,14 @@ Music::Music(
       audio(player)
 {
     audio.setTrackFinishedCallback([this]()
-                                   { nextTrack(); });
+                                { nextTrack(); });
 }
 
 void Music::begin()
 {
 }
 
-void Music::drawScreen()
+void Music::draw()
 {
     ui.clear();
 
@@ -77,7 +77,7 @@ void Music::update()
         showVolumeOverlay_ = false;
 
         // Force a redraw of the normal music screen
-        drawScreen();
+        draw();
     }
 }
 
@@ -383,6 +383,7 @@ void Music::handleInput(InputEvent event)
         break;
 
     case InputEvent::UP_HOLD:
+    case InputEvent::UP_REPEAT:
         audio.volumeUp();
 
         showVolumeOverlay_ = true;
@@ -397,6 +398,7 @@ void Music::handleInput(InputEvent event)
         break;
 
     case InputEvent::DOWN_HOLD:
+    case InputEvent::DOWN_REPEAT:
         audio.volumeDown();
 
         showVolumeOverlay_ = true;

@@ -6,9 +6,9 @@ Input::Input(
     int selectPin,
     int backPin)
     : upPin(upPin),
-        downPin(downPin),
-        selectPin(selectPin),
-        backPin(backPin)
+      downPin(downPin),
+      selectPin(selectPin),
+      backPin(backPin)
 {
 }
 
@@ -24,14 +24,15 @@ InputEvent Input::processButton(
     ButtonState &state,
     bool isPressed,
     InputEvent pressEvent,
-    InputEvent holdEvent)
+    InputEvent holdEvent,
+    InputEvent repeatEvent)
 {
     uint32_t now = millis();
 
     // Ignore bouncing
     if (isPressed != state.isDown)
     {
-        if (now - state.lastChange < DEBOUNCE_TIME)
+        if (now - state.lastChange < kDebounceTimeMs)
             return InputEvent::NONE;
 
         state.lastChange = now;
@@ -50,10 +51,22 @@ InputEvent Input::processButton(
     // Hold detected
     if (state.isDown &&
         !state.holdSent &&
-        (now - state.pressedAt >= HOLD_TIME))
+        (now - state.pressedAt >= kHoldTimeMs))
     {
         state.holdSent = true;
+        state.lastRepeat = now;
+
         return holdEvent;
+    }
+
+    // Repeat while held
+    if (state.isDown &&
+        state.holdSent &&
+        (now - state.lastRepeat >= kRepeatIntervalMs))
+    {
+        state.lastRepeat = now;
+
+        return repeatEvent;
     }
 
     // Button released
@@ -80,7 +93,8 @@ InputEvent Input::getEvent()
         upState,
         digitalRead(upPin) == LOW,
         InputEvent::UP_PRESS,
-        InputEvent::UP_HOLD);
+        InputEvent::UP_HOLD,
+        InputEvent::UP_REPEAT);
 
     if (event != InputEvent::NONE)
         return event;
@@ -89,7 +103,8 @@ InputEvent Input::getEvent()
         downState,
         digitalRead(downPin) == LOW,
         InputEvent::DOWN_PRESS,
-        InputEvent::DOWN_HOLD);
+        InputEvent::DOWN_HOLD,
+        InputEvent::DOWN_REPEAT);
 
     if (event != InputEvent::NONE)
         return event;
@@ -98,7 +113,8 @@ InputEvent Input::getEvent()
         selectState,
         digitalRead(selectPin) == LOW,
         InputEvent::SELECT_PRESS,
-        InputEvent::SELECT_HOLD);
+        InputEvent::SELECT_HOLD,
+        InputEvent::SELECT_REPEAT);
 
     if (event != InputEvent::NONE)
         return event;
@@ -107,7 +123,8 @@ InputEvent Input::getEvent()
         backState,
         digitalRead(backPin) == LOW,
         InputEvent::BACK_PRESS,
-        InputEvent::BACK_HOLD);
+        InputEvent::BACK_HOLD,
+        InputEvent::BACK_REPEAT);
 
     return event;
 }

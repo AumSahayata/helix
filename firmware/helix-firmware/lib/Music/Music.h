@@ -4,6 +4,7 @@
 #include <Adafruit_ST7789.h>
 #include <vector>
 
+#include <App.h>
 #include <UI.h>
 #include <Input.h>
 #include <Widgets.h>
@@ -19,19 +20,13 @@ struct Song
     bool metadataLoaded = false;
 };
 
-class Music
+class Music : public App
 {
 public:
     Music(
         Adafruit_ST7789 &display,
         UI &ui,
         AudioPlayer &audio);
-
-    void begin();
-
-    void drawScreen();
-
-    void update();
 
     void playPause();
 
@@ -41,7 +36,10 @@ public:
 
     bool isPlaying() const;
 
-    void handleInput(InputEvent event);
+    void begin() override;
+    void draw() override;
+    void update() override;
+    void handleInput(InputEvent event) override;
 
     void setPlaylist(const std::vector<String> &files);
 

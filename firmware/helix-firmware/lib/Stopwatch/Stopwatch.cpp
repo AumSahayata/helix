@@ -12,7 +12,7 @@ void Stopwatch::begin()
     // Keeping begin() gives us somewhere for future setup.
 }
 
-void Stopwatch::drawScreen()
+void Stopwatch::draw()
 {
     ui.clear();
 

@@ -20,7 +20,7 @@ void Pomodoro::begin()
 // =========================
 // Draw Full Screen
 // =========================
-void Pomodoro::drawScreen()
+void Pomodoro::draw()
 {
     ui.clear();
 

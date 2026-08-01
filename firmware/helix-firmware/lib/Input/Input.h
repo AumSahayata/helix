@@ -14,7 +14,12 @@ enum class InputEvent
     UP_HOLD,
     DOWN_HOLD,
     SELECT_HOLD,
-    BACK_HOLD
+    BACK_HOLD,
+
+    UP_REPEAT,
+    DOWN_REPEAT,
+    SELECT_REPEAT,
+    BACK_REPEAT
 };
 
 class Input
@@ -42,6 +47,7 @@ private:
         uint32_t pressedAt = 0;  // When the button was pressed
         uint32_t lastChange = 0; // Last accepted state change (debounce)
         bool holdSent = false;   // Prevent multiple HOLD events
+        uint32_t lastRepeat = 0;
     };
 
     ButtonState upState;
@@ -53,8 +59,11 @@ private:
         ButtonState &state,
         bool isPressed,
         InputEvent pressEvent,
-        InputEvent holdEvent);
+        InputEvent holdEvent,
+        InputEvent repeatEvent
+    );
 
-    static constexpr uint32_t DEBOUNCE_TIME = 30;
-    static constexpr uint32_t HOLD_TIME = 500;
+    static constexpr uint32_t kDebounceTimeMs  = 30;
+    static constexpr uint32_t kHoldTimeMs  = 500;
+    static constexpr uint32_t kRepeatIntervalMs  = 180;
 };
