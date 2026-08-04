@@ -15,7 +15,10 @@ void HomeMenu::draw()
 
     for (int i = 0; i < MENU_COUNT; i++)
     {
-        drawMenuItem(i, i == selectedItem);
+        ui.drawMenuItem(
+            i,
+            menuItems[i].title,
+            i == selectedItem);
     }
 }
 
@@ -32,11 +35,15 @@ HomeAction HomeMenu::handleInput(InputEvent event)
             selectedItem = MENU_COUNT - 1;
         }
 
-        // Remove old highlight
-        drawMenuItem(oldItem, false);
+        ui.drawMenuItem(
+            oldItem,
+            menuItems[oldItem].title,
+            false);
 
-        // Draw new highlight
-        drawMenuItem(selectedItem, true);
+        ui.drawMenuItem(
+            selectedItem,
+            menuItems[selectedItem].title,
+            true);
 
         Serial.print("Selected: ");
         Serial.println(menuItems[selectedItem].title);
@@ -52,8 +59,14 @@ HomeAction HomeMenu::handleInput(InputEvent event)
             selectedItem = 0;
         }
 
-        drawMenuItem(oldItem, false);
-        drawMenuItem(selectedItem, true);
+        ui.drawMenuItem(
+            oldItem,
+            menuItems[oldItem].title,
+            false);
+        ui.drawMenuItem(
+            selectedItem,
+            menuItems[selectedItem].title,
+            true);
 
         Serial.print("Selected: ");
         Serial.println(menuItems[selectedItem].title);
@@ -71,45 +84,4 @@ HomeAction HomeMenu::handleInput(InputEvent event)
         return menuItems[selectedItem].action;
     }
     return HomeAction::NONE;
-}
-
-void HomeMenu::drawMenuItem(
-    int index,
-    bool selected)
-{
-
-    int y = 75 + (index * 35);
-
-    // Clear only this menu row
-    tft.fillRect(
-        10,
-        y - 7,
-        220,
-        30,
-        Theme::BACKGROUND);
-
-    tft.setTextSize(2);
-
-    if (selected)
-    {
-        tft.fillRoundRect(
-            10,
-            y - 7,
-            220,
-            30,
-            5,
-            Theme::PRIMARY);
-
-        tft.setTextColor(Theme::BACKGROUND);
-        tft.setCursor(25, y);
-        tft.print("> ");
-        tft.print(menuItems[index].title);
-    }
-    else
-    {
-        tft.setTextColor(Theme::TEXT);
-        tft.setCursor(25, y);
-        tft.print("  ");
-        tft.print(menuItems[index].title);
-    }
 }

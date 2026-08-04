@@ -27,47 +27,6 @@ void SettingsApp::handleInput(InputEvent event)
     (void)event;
 }
 
-void SettingsApp::drawMenuItem(
-    int index,
-    const char *text,
-    bool selected)
-{
-    int y = kMenuStartY + (index * kMenuItemSpacing);
-
-    // Clear only this menu row
-    tft.fillRect(
-        10,
-        y - 7,
-        220,
-        30,
-        Theme::BACKGROUND);
-
-    tft.setTextSize(2);
-
-    if (selected)
-    {
-        tft.fillRoundRect(
-            10,
-            y - 7,
-            220,
-            30,
-            5,
-            Theme::PRIMARY);
-
-        tft.setTextColor(Theme::BACKGROUND);
-        tft.setCursor(25, y);
-        tft.print("> ");
-        tft.print(text);
-    }
-    else
-    {
-        tft.setTextColor(Theme::TEXT);
-        tft.setCursor(25, y);
-        tft.print("  ");
-        tft.print(text);
-    }
-}
-
 void SettingsApp::draw()
 {
     ui.clear();
@@ -112,10 +71,10 @@ void SettingsApp::drawCurrentPage()
 
 void SettingsApp::drawMainPage()
 {
-    drawMenuItem(0, "Audio",  selectedItem_ == 0);
-    drawMenuItem(1, "Display", selectedItem_ == 1);
-    drawMenuItem(2, "System", selectedItem_ == 2);
-    drawMenuItem(3, "About", selectedItem_ == 3);
+    ui.drawMenuItem(0, "Audio",  selectedItem_ == 0);
+    ui.drawMenuItem(1, "Display", selectedItem_ == 1);
+    ui.drawMenuItem(2, "System", selectedItem_ == 2);
+    ui.drawMenuItem(3, "About", selectedItem_ == 3);
 }
 
 void SettingsApp::drawAudioPage()

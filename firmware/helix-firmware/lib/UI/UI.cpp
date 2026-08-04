@@ -48,3 +48,47 @@ void UI::drawHeader(const char* title)
         Theme::PRIMARY
     );
 }
+
+void UI::drawMenuItem(
+    int index,
+    const char *text,
+    bool selected)
+{
+    constexpr int16_t kMenuStartY = 75;
+    constexpr int16_t kMenuItemSpacing = 35;
+
+    int y = kMenuStartY + (index * kMenuItemSpacing);
+
+    // Clear only this menu row
+    tft.fillRect(
+        10,
+        y - 7,
+        220,
+        30,
+        Theme::BACKGROUND);
+
+    tft.setTextSize(2);
+
+    if (selected)
+    {
+        tft.fillRoundRect(
+            10,
+            y - 7,
+            220,
+            30,
+            5,
+            Theme::PRIMARY);
+
+        tft.setTextColor(Theme::BACKGROUND);
+        tft.setCursor(25, y);
+        tft.print("> ");
+        tft.print(text);
+    }
+    else
+    {
+        tft.setTextColor(Theme::TEXT);
+        tft.setCursor(25, y);
+        tft.print("  ");
+        tft.print(text);
+    }
+}

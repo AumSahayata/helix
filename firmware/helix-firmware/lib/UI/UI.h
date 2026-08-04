@@ -40,7 +40,7 @@ namespace Theme
     constexpr uint16_t PRIMARY = 0xC618;
     constexpr uint16_t SUCCESS = ST77XX_GREEN;
     constexpr uint16_t WARNING = ST77XX_YELLOW;
-    constexpr uint16_t MUTED =  0x8410;
+    constexpr uint16_t MUTED = 0x8410;
 }
 
 class UI
@@ -51,6 +51,8 @@ public:
     void clear();
 
     void drawHeader(const char *title);
+
+    void drawMenuItem(int index, const char *text, bool selected);
 
 private:
     Adafruit_ST7789 &tft;
