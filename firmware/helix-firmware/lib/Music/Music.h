@@ -9,6 +9,7 @@
 #include <Input.h>
 #include <Widgets.h>
 #include <AudioPlayer.h>
+#include <MusicLibrary.h>
 
 struct Song
 {
@@ -26,7 +27,8 @@ public:
     Music(
         Adafruit_ST7789 &display,
         UI &ui,
-        AudioPlayer &audio);
+        AudioPlayer &audio,
+        MusicLibrary &library);
 
     void playPause();
 
@@ -40,15 +42,15 @@ public:
     void draw() override;
     void update() override;
     bool handleInput(InputEvent event) override;
+    void onEnter() override;
 
     void setPlaylist(const std::vector<String> &files);
 
 private:
     Adafruit_ST7789 &tft;
-
-    AudioPlayer& audio;
-
+    AudioPlayer &audio;
     UI &ui;
+    MusicLibrary &library;
 
     int currentTrack = 0;
 
@@ -83,4 +85,6 @@ private:
     void drawPlaybackState();
 
     void drawVolumeOverlay();
+
+    void drawLoadingScreen();
 };

@@ -4,17 +4,29 @@
 Music::Music(
     Adafruit_ST7789 &display,
     UI &uiManager,
-    AudioPlayer &player)
+    AudioPlayer &player,
+    MusicLibrary &library)
     : tft(display),
       ui(uiManager),
-      audio(player)
+      audio(player),
+      library(library)
 {
     audio.setTrackFinishedCallback([this]()
-                                { nextTrack(); });
+                                   { nextTrack(); });
 }
 
 void Music::begin()
 {
+}
+
+void Music::onEnter()
+{
+    if (!library.isLoaded())
+    {
+        drawLoadingScreen();
+        library.load();
+        setPlaylist(library.tracks());
+    }
 }
 
 void Music::draw()
@@ -40,6 +52,28 @@ void Music::draw()
     drawProgressFill();
 
     drawPlaybackState();
+}
+
+void Music::drawLoadingScreen()
+{
+    ui.clear();
+
+    ui.drawHeader("MUSIC");
+
+    tft.setTextColor(Theme::PRIMARY);
+    tft.setTextSize(5);
+
+    tft.setTextSize(2);
+    tft.setTextColor(Theme::TEXT);
+
+    tft.setCursor(38, 150);
+    tft.print("Scanning Library");
+
+    tft.setTextSize(1);
+    tft.setTextColor(Theme::MUTED);
+
+    tft.setCursor(62, 220);
+    tft.print("Please wait...");
 }
 
 void Music::update()
@@ -376,10 +410,12 @@ bool Music::handleInput(InputEvent event)
     {
     case InputEvent::SELECT_PRESS:
         playPause();
+        return true;
         break;
 
     case InputEvent::UP_PRESS:
         nextTrack();
+        return true;
         break;
 
     case InputEvent::UP_HOLD:
@@ -391,10 +427,12 @@ bool Music::handleInput(InputEvent event)
 
         drawVolumeOverlay();
         drawPlaybackState();
+        return true;
         break;
 
     case InputEvent::DOWN_PRESS:
         previousTrack();
+        return true;
         break;
 
     case InputEvent::DOWN_HOLD:
@@ -406,13 +444,13 @@ bool Music::handleInput(InputEvent event)
 
         drawVolumeOverlay();
         drawPlaybackState();
+        return true;
         break;
 
     default:
+        return false;
         break;
     }
-
-    return true;
 }
 
 void Music::setPlaylist(const std::vector<String> &files)

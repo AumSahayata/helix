@@ -72,6 +72,7 @@ bool SettingsApp::handleInput(InputEvent event)
 
     case SettingsPage::Volume:
         handleVolumePageInput(event);
+        return true;
         break;
 
     default:

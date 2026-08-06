@@ -3,16 +3,19 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_ST7789.h>
 
+#include <Startup.h>
 #include <Storage.h>
 #include <UI.h>
 #include <HomeMenu.h>
 #include <Input.h>
 #include <Music.h>
+#include <MusicLibrary.h>
 #include <Stopwatch.h>
 #include <Pomodoro.h>
 #include <AudioPlayer.h>
 #include <Settings.h>
 #include <SettingsApp.h>
+#include <Logo.h>
 
 // =========================
 // Display
@@ -24,11 +27,14 @@ constexpr int TFT_DC = 5;
 constexpr int TFT_RST = 4;
 constexpr int SD_MISO = 13;
 
+constexpr uint8_t STARTUP_TASKS = 4;
+
 SPIClass spi(FSPI);
 Storage storage(spi, 10);
 Settings settings;
 Adafruit_ST7789 tft(TFT_CS, TFT_DC, TFT_RST);
 
+Startup startup(tft);
 UI ui(tft);
 HomeMenu homeMenu(tft, ui);
 
@@ -36,7 +42,8 @@ HomeMenu homeMenu(tft, ui);
 Stopwatch stopwatch(tft, ui);
 Pomodoro pomodoro(tft, ui);
 AudioPlayer audioPlayer;
-Music music(tft, ui, audioPlayer);
+MusicLibrary musicLibrary(storage);
+Music music(tft, ui, audioPlayer, musicLibrary);
 SettingsApp settingsApp(tft, ui, settings, audioPlayer);
 
 // =========================
@@ -111,6 +118,12 @@ void setup()
 {
   Serial.begin(115200);
 
+  // Display
+  tft.init(240, 320);
+  tft.setRotation(0);
+
+  startup.begin(STARTUP_TASKS);
+
   input.begin();
 
   spi.begin(
@@ -118,30 +131,41 @@ void setup()
       SD_MISO,
       TFT_MOSI);
 
-  // Display
-  tft.init(240, 320);
-  tft.setRotation(0);
-
+  startup.startTask("Storage");
   storage.begin();
-  settings.load();
-  audioPlayer.begin();
+  startup.finishTask();
+  startup.tick();
 
+  startup.startTask("Settings");
+  settings.load();
+  startup.finishTask();
+  startup.tick();
+
+  startup.startTask("Audio");
+  audioPlayer.begin();
+  audioPlayer.setVolume(settings.getVolume());
+  startup.finishTask();
+  startup.tick();
+
+  startup.startTask("Applications");
   stopwatch.begin();
   pomodoro.begin();
   music.begin();
   settingsApp.begin();
-  audioPlayer.setVolume(settings.getVolume());
+
+  startup.finishTask();
+  startup.tick();
+
+  startup.complete();
+  while (!startup.isFinished())
+  {
+    startup.tick();
+    delay(1);
+  }
 
   homeMenu.draw();
 
   Serial.println("HELIX UI ready");
-
-  std::vector<String> files;
-
-  if (storage.listFilesRecursive("/Music", files))
-  {
-    music.setPlaylist(files);
-  }
 }
 
 // =========================

@@ -268,15 +268,16 @@ bool Pomodoro::handleInput(InputEvent event)
     {
     case InputEvent::SELECT_PRESS:
         startPause();
+        return true;
         break;
 
     case InputEvent::UP_PRESS:
         reset();
+        return true;
         break;
 
     default:
+        return false;
         break;
     }
-
-    return true;
 }
