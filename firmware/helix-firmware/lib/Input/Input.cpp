@@ -6,9 +6,9 @@ Input::Input(
     int selectPin,
     int backPin)
     : upPin(upPin),
-      downPin(downPin),
-      selectPin(selectPin),
-      backPin(backPin)
+        downPin(downPin),
+        selectPin(selectPin),
+        backPin(backPin)
 {
 }
 

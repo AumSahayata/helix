@@ -22,7 +22,7 @@ public:
 
     void draw() override;
     void update() override;
-    void handleInput(InputEvent event) override;
+    bool handleInput(InputEvent event) override;
 
 private:
     Adafruit_ST7789 &tft;

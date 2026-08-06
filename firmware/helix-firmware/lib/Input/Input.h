@@ -63,7 +63,7 @@ private:
         InputEvent repeatEvent
     );
 
-    static constexpr uint32_t kDebounceTimeMs  = 30;
+    static constexpr uint32_t kDebounceTimeMs = 20;
     static constexpr uint32_t kHoldTimeMs  = 500;
     static constexpr uint32_t kRepeatIntervalMs  = 180;
 };

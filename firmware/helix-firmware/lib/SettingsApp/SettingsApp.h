@@ -6,6 +6,8 @@
 #include <App.h>
 #include <Input.h>
 #include <UI.h>
+#include <Settings.h>
+#include <AudioPlayer.h>
 
 enum class SettingsPage
 {
@@ -20,26 +22,30 @@ enum class SettingsPage
 class SettingsApp : public App
 {
 public:
-    SettingsApp(
-        Adafruit_ST7789 &display,
-        UI &ui);
+SettingsApp(
+    Adafruit_ST7789& display,
+    UI& ui,
+    Settings& settings,
+    AudioPlayer& audioPlayer);
 
     void begin() override;
     void draw() override;
     void update() override;
-    void handleInput(InputEvent event) override;
+    bool handleInput(InputEvent event) override;
+    void onEnter() override;
+
+    void reset();
 
 private:
     Adafruit_ST7789 &tft;
     UI &ui;
+    Settings &settings;
+    AudioPlayer &audioPlayer;
+
     SettingsPage currentPage_ = SettingsPage::Main;
 
-    void drawMenuItem(
-        int index,
-        const char *text,
-        bool selected);
-
-    uint8_t selectedItem_ = 0;
+    uint8_t mainSelection_ = 0;
+    uint8_t audioSelection_ = 0;
 
     void drawCurrentPage();
 
@@ -50,4 +56,14 @@ private:
     void drawAboutPage();
 
     void drawVolumePage();
+    void drawVolumePageStatic();
+    void drawVolumeValue();
+
+    const char* getMainMenuText(uint8_t index);
+
+    void changePage(SettingsPage page);
+
+    void handleMainPageInput(InputEvent event);
+    void handleAudioPageInput(InputEvent event);
+    void handleVolumePageInput(InputEvent event);
 };

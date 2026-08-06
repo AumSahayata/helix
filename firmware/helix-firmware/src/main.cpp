@@ -11,6 +11,7 @@
 #include <Stopwatch.h>
 #include <Pomodoro.h>
 #include <AudioPlayer.h>
+#include <Settings.h>
 #include <SettingsApp.h>
 
 // =========================
@@ -25,6 +26,7 @@ constexpr int SD_MISO = 13;
 
 SPIClass spi(FSPI);
 Storage storage(spi, 10);
+Settings settings;
 Adafruit_ST7789 tft(TFT_CS, TFT_DC, TFT_RST);
 
 UI ui(tft);
@@ -35,7 +37,7 @@ Stopwatch stopwatch(tft, ui);
 Pomodoro pomodoro(tft, ui);
 AudioPlayer audioPlayer;
 Music music(tft, ui, audioPlayer);
-SettingsApp settingsApp(tft, ui);
+SettingsApp settingsApp(tft, ui, settings, audioPlayer);
 
 // =========================
 // InputEvents
@@ -86,6 +88,7 @@ void goHome()
 void openApp(App &app)
 {
   currentApp = &app;
+  currentApp->onEnter();
   currentApp->draw();
 }
 
@@ -120,12 +123,14 @@ void setup()
   tft.setRotation(0);
 
   storage.begin();
+  settings.load();
   audioPlayer.begin();
 
   stopwatch.begin();
   pomodoro.begin();
   music.begin();
   settingsApp.begin();
+  audioPlayer.setVolume(settings.getVolume());
 
   homeMenu.draw();
 
@@ -179,9 +184,9 @@ void loop()
   }
 
   currentApp->update();
-  currentApp->handleInput(event);
+  bool handled = currentApp->handleInput(event);
 
-  if (event == InputEvent::BACK_PRESS)
+  if (!handled && event == InputEvent::BACK_PRESS)
   {
     // Temporary app-specific cleanup
 

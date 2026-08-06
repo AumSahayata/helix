@@ -4,7 +4,7 @@ HomeMenu::HomeMenu(
     Adafruit_ST7789 &display,
     UI &ui)
     : tft(display),
-      ui(ui)
+        ui(ui)
 {
 }
 

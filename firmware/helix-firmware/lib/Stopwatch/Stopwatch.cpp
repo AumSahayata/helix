@@ -112,7 +112,7 @@ bool Stopwatch::isRunning() const
     return running;
 }
 
-void Stopwatch::handleInput(InputEvent event)
+bool Stopwatch::handleInput(InputEvent event)
 {
     switch (event)
     {

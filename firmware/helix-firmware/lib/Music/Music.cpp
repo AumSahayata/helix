@@ -370,7 +370,7 @@ void Music::playCurrentTrack()
     drawPlaybackState();
 }
 
-void Music::handleInput(InputEvent event)
+bool Music::handleInput(InputEvent event)
 {
     switch (event)
     {
@@ -411,6 +411,8 @@ void Music::handleInput(InputEvent event)
     default:
         break;
     }
+
+    return true;
 }
 
 void Music::setPlaylist(const std::vector<String> &files)

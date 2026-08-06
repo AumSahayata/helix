@@ -71,7 +71,7 @@ This roadmap tracks the firmware evolution of Helix.
 
 # Version 0.4 — Device Features
 
-- [ ] Settings application
+- [x] Settings application
 - [ ] Battery monitoring
 - [ ] Brightness control
 - [ ] Sleep mode

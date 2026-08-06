@@ -21,7 +21,7 @@ public:
     void begin() override;
     void draw() override;
     void update() override;
-    void handleInput(InputEvent event) override;
+    bool handleInput(InputEvent event) override;
 
 private:
     enum class Mode

@@ -262,7 +262,7 @@ bool Pomodoro::isRunning() const
     return running;
 }
 
-void Pomodoro::handleInput(InputEvent event)
+bool Pomodoro::handleInput(InputEvent event)
 {
     switch (event)
     {
@@ -277,4 +277,6 @@ void Pomodoro::handleInput(InputEvent event)
     default:
         break;
     }
+
+    return true;
 }
