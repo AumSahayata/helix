@@ -17,6 +17,7 @@ struct Song
     String path;
     String artist = "Unknown";
     uint32_t duration = 0;
+    String album;
 
     bool metadataLoaded = false;
 };
@@ -64,27 +65,37 @@ private:
 
     static constexpr uint32_t REFRESH_MS = 33;
 
+    uint32_t lastElapsedSecond_ = UINT32_MAX;
+
     std::vector<Song> playlist;
 
-    MarqueeText titleMarquee;
+    MarqueeText marqueeText;
+
+    int16_t controlsY_ = 300;
+
+    static constexpr int16_t kAlbumArtSize = 140;
+
+    int16_t progressSectionY_ = 0;
 
     void playCurrentTrack();
 
-    void drawAlbumArt();
+    void drawAlbumArt(int16_t x, int16_t y);
 
     void drawStaticUI();
 
-    void drawTrack();
+    void drawTrack(int16_t y);
 
-    void drawElapsedTime();
+    void drawProgressSection(int16_t y);
 
     void drawProgressOutline();
 
-    void drawProgressFill();
+    void drawElapsedTime();
 
-    void drawPlaybackState();
+    void drawProgressFill();
 
     void drawVolumeOverlay();
 
     void drawLoadingScreen();
+
+    void drawTransportControls(int16_t y);
 };

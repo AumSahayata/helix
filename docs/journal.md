@@ -38,3 +38,16 @@ Bring up the ESP32 and verify the development environment.
 Create better UI and try playing music over bluetooth
 
 ---
+
+## 2026-08-01 to 2026-08-09
+
+* Worked on UI.
+* Created apps like music player, stopwatch, pomodoro and settings.
+* Created Widgets for reusablility.
+
+
+### Next Goal
+
+Create try playing music over bluetooth, save settigns on the board. 
+
+---

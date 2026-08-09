@@ -37,14 +37,15 @@ void AudioPlayer::begin()
     audio_->setPinout(
         I2S_BCLK,
         I2S_LRCK,
-        I2S_DOUT
-    );
+        I2S_DOUT);
 
     setVolume(volumePercent_);
 }
 
 bool AudioPlayer::play(const String &path)
 {
+    metadata_ = {};
+    
     bool ok = audio_->connecttoFS(SD, path.c_str());
 
     if (ok)
@@ -145,6 +146,11 @@ void AudioPlayer::setTrackFinishedCallback(TrackFinishedCallback callback)
     trackFinishedCallback_ = std::move(callback);
 }
 
+void AudioPlayer::setMetadataCallback(MetadataCallback callback)
+{
+    metadataCallback_ = std::move(callback);
+}
+
 void AudioPlayer::handleTrackFinished()
 {
     playbackState_ = PlaybackState::Stopped;
@@ -152,6 +158,34 @@ void AudioPlayer::handleTrackFinished()
     if (trackFinishedCallback_)
     {
         trackFinishedCallback_();
+    }
+}
+
+void AudioPlayer::handleMetadata(const char *info)
+{
+    String str(info);
+
+    if (str.startsWith("Title: "))
+    {
+        metadata_.title = str.substring(7);
+    }
+    else if (str.startsWith("Artist: "))
+    {
+        metadata_.artist = str.substring(8);
+    }
+    else if (str.startsWith("Album: "))
+    {
+        metadata_.album = str.substring(7);
+    }
+    else if (str.startsWith("Track: "))
+    {
+        if (metadataCallback_)
+        {
+            metadataCallback_(
+                metadata_.title,
+                metadata_.artist,
+                metadata_.album);
+        }
     }
 }
 
@@ -163,10 +197,23 @@ void AudioPlayer::notifyTrackFinished()
     }
 }
 
+void AudioPlayer::notifyMetadata(const char *info)
+{
+    if (instance_)
+    {
+        instance_->handleMetadata(info);
+    }
+}
+
 void audio_eof_mp3(const char *info)
 {
     (void)info;
     AudioPlayer::notifyTrackFinished();
+}
+
+void audio_id3data(const char *info)
+{
+    AudioPlayer::notifyMetadata(info);
 }
 
 AudioPlayer::PlaybackState AudioPlayer::getPlaybackState() const

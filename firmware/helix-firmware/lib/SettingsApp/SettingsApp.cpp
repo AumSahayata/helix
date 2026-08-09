@@ -6,6 +6,10 @@ namespace
     constexpr int16_t kMenuStartY = 75;
     constexpr int16_t kMenuItemSpacing = 35;
     constexpr uint8_t kMainMenuCount = 4;
+
+    constexpr int16_t kVolumeStartY = 70;
+    constexpr int16_t kVolumeBarWidth = 180;
+    constexpr int16_t kVolumeBarHeight = 10;
 }
 
 SettingsApp::SettingsApp(
@@ -263,59 +267,82 @@ void SettingsApp::drawAboutPage()
 
 void SettingsApp::drawVolumePageStatic()
 {
+    UI::VerticalLayout layout(kVolumeStartY);
+
+    const int16_t titleY = ui.nextLine(layout, 2, 30);
+
+    const int16_t barY = ui.nextBlock(layout, kVolumeBarHeight, 50);
+
+    auto bar = ui.centerRect(kVolumeBarWidth, barY);
+
     tft.fillRect(
         0,
         40,
-        240,
-        280,
+        tft.width(),
+        tft.height() - 40,
         Theme::BACKGROUND);
 
-    tft.setTextColor(Theme::TEXT);
-    tft.setTextSize(2);
-
-    tft.setCursor(75, 70);
-    tft.print("Volume");
+    ui.drawCenteredText(
+        "Volume",
+        titleY,
+        2,
+        Theme::TEXT);
 
     Widgets::drawProgressOutline(
         tft,
-        30,
-        150,
-        180,
-        10,
+        bar.x,
+        bar.y,
+        kVolumeBarWidth,
+        kVolumeBarHeight,
         Theme::PRIMARY);
 
-    tft.setTextSize(1);
-    tft.setTextColor(Theme::MUTED);
+    ui.drawCenteredText(
+        "Press or Hold UP/DOWN to adjust",
+        ui.nextLine(layout, 1, 8),
+        1,
+        Theme::MUTED,
+        false);
 
-    tft.setCursor(30, 220);
-    tft.print("Press or Hold UP/DOWN to adjust");
-
-    tft.setCursor(30, 235);
-    tft.print("BACK to save");
+    ui.drawCenteredText(
+        "BACK to save",
+        ui.nextLine(layout, 1),
+        1,
+        Theme::MUTED,
+        false);
 }
 
 void SettingsApp::drawVolumeValue()
 {
+    UI::VerticalLayout layout(kVolumeStartY);
+
+    // Skip the title
+    ui.nextLine(layout, 2, 30);
+
+    // Get the exact same bar position
+    const int16_t barY = ui.nextBlock(layout, kVolumeBarHeight, 50);
+    auto bar = ui.centerRect(kVolumeBarWidth, barY);
+
     tft.fillRect(
         60,
-        100,
-        120,
-        70,
+        95,
+        tft.width(),
+        45,
         Theme::BACKGROUND);
 
-    tft.setTextSize(3);
-    tft.setTextColor(Theme::PRIMARY);
+    String value = String(settings.getVolume()) + "%";
 
-    tft.setCursor(75, 105);
-    tft.print(settings.getVolume());
-    tft.print("%");
+    ui.drawCenteredText(
+        value,
+        140,
+        3,
+        Theme::PRIMARY);
 
     Widgets::drawProgressFill(
         tft,
-        30,
-        150,
-        180,
-        10,
+        bar.x,
+        bar.y,
+        kVolumeBarWidth,
+        kVolumeBarHeight,
         settings.getVolume(),
         100,
         Theme::PRIMARY,

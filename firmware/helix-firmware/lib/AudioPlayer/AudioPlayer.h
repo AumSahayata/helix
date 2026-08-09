@@ -42,9 +42,15 @@ public:
 
     using TrackFinishedCallback = std::function<void()>;
 
+    using MetadataCallback = std::function<void(const String &title, const String &artist, const String &album)>;
+
     void setTrackFinishedCallback(TrackFinishedCallback callback);
 
+    void setMetadataCallback(MetadataCallback callback);
+
     static void notifyTrackFinished();
+
+    static void notifyMetadata(const char *info);
 
     PlaybackState getPlaybackState() const;
 
@@ -64,4 +70,17 @@ private:
     TrackFinishedCallback trackFinishedCallback_;
 
     void handleTrackFinished();
+
+    MetadataCallback metadataCallback_;
+
+    void handleMetadata(const char *info);
+
+    struct TrackMetadata
+    {
+        String title;
+        String artist;
+        String album;
+    };
+
+    TrackMetadata metadata_;
 };

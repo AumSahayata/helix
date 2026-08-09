@@ -13,6 +13,20 @@ Music::Music(
 {
     audio.setTrackFinishedCallback([this]()
                                    { nextTrack(); });
+    audio.setMetadataCallback(
+        [this](const String &title,
+               const String &artist,
+               const String &album)
+        {
+            Song &song = playlist[currentTrack];
+
+            song.title = title;
+            song.artist = artist;
+            song.album = album;
+            song.metadataLoaded = true;
+
+            drawStaticUI();
+        });
 }
 
 void Music::begin()
@@ -33,25 +47,11 @@ void Music::draw()
 {
     ui.clear();
 
+    marqueeText.reset();
+
     ui.drawHeader("MUSIC");
 
     drawStaticUI();
-
-    drawTrack();
-
-    Widgets::drawProgressOutline(
-        tft,
-        20,
-        265,
-        200,
-        10,
-        Theme::PRIMARY);
-
-    drawElapsedTime();
-
-    drawProgressFill();
-
-    drawPlaybackState();
 }
 
 void Music::drawLoadingScreen()
@@ -60,20 +60,19 @@ void Music::drawLoadingScreen()
 
     ui.drawHeader("MUSIC");
 
-    tft.setTextColor(Theme::PRIMARY);
-    tft.setTextSize(5);
+    UI::VerticalLayout layout(115);
 
-    tft.setTextSize(2);
-    tft.setTextColor(Theme::TEXT);
+    ui.drawCenteredText(
+        "Loading...",
+        ui.nextLine(layout, 2, 15),
+        2,
+        Theme::TEXT);
 
-    tft.setCursor(38, 150);
-    tft.print("Scanning Library");
-
-    tft.setTextSize(1);
-    tft.setTextColor(Theme::MUTED);
-
-    tft.setCursor(62, 220);
-    tft.print("Please wait...");
+    ui.drawCenteredText(
+        "Music Library",
+        ui.nextLine(layout, 1),
+        1,
+        Theme::MUTED);
 }
 
 void Music::update()
@@ -84,25 +83,14 @@ void Music::update()
     Song &song = playlist[currentTrack];
 
     elapsed = audio.getCurrentTime() * 1000;
+    uint32_t currentSecond = elapsed / 1000;
 
-    if (
-        millis() - lastDraw >= REFRESH_MS)
+    if (currentSecond != lastElapsedSecond_)
     {
+        lastElapsedSecond_ = currentSecond;
+
         drawElapsedTime();
-
-        Widgets::drawProgressFill(
-            tft,
-            20,
-            265,
-            200,
-            10,
-            elapsed,
-            song.duration,
-            Theme::PRIMARY,
-            Theme::BACKGROUND);
-        drawPlaybackState();
-
-        lastDraw = millis();
+        drawProgressFill();
     }
 
     if (showVolumeOverlay_ &&
@@ -112,6 +100,16 @@ void Music::update()
 
         // Force a redraw of the normal music screen
         draw();
+    }
+
+    marqueeText.update();
+
+    if (marqueeText.needsRedraw())
+    {
+        marqueeText.draw(
+            tft,
+            Theme::TEXT,
+            Theme::BACKGROUND);
     }
 }
 
@@ -132,7 +130,7 @@ void Music::playPause()
         break;
     }
 
-    drawPlaybackState();
+    drawTransportControls(controlsY_);
 }
 
 void Music::nextTrack()
@@ -176,12 +174,9 @@ bool Music::isPlaying() const
     return audio.isPlaying();
 }
 
-void Music::drawAlbumArt()
+void Music::drawAlbumArt(int16_t x, int16_t y)
 {
-    const int x = 60;
-    const int y = 60;
-
-    const int size = 120;
+    constexpr int size = 140;
 
     tft.drawRoundRect(
         x,
@@ -191,95 +186,134 @@ void Music::drawAlbumArt()
         8,
         Theme::PRIMARY);
 
-    tft.setTextColor(Theme::PRIMARY);
+    UI::VerticalLayout layout(y + 30);
 
-    tft.setTextSize(5);
+    ui.drawCenteredText(
+        "\x0E",
+        ui.nextLine(layout, 4, 8),
+        4,
+        Theme::PRIMARY);
 
-    tft.setCursor(
-        x + 42,
-        y + 35);
-
-    tft.print("M");
+    ui.drawCenteredText(
+        "HELIX",
+        ui.nextLine(layout, 2, 12),
+        2,
+        Theme::MUTED);
 }
 
-void Music::drawTrack()
+void Music::drawTrack(int16_t y)
 {
     Song &song = playlist[currentTrack];
 
-    tft.fillRect(
+    UI::VerticalLayout layout(y);
+
+    int16_t titleY = ui.nextLine(layout, 2, 10);
+
+    marqueeText.setBounds(
         20,
-        190,
-        200,
-        40,
+        titleY,
+        200);
+
+    marqueeText.setTextSize(2);
+    marqueeText.setText(tft, song.title);
+    marqueeText.draw(
+        tft,
+        Theme::TEXT,
         Theme::BACKGROUND);
 
-    // Title
-    tft.setTextSize(2);
+    int16_t artistY = ui.nextLine(layout, 1);
 
-    tft.setTextColor(
-        Theme::TEXT);
-
-    tft.setCursor(
+    tft.fillRect(
         20,
-        195);
+        artistY,
+        200,
+        ui.textHeight(2),
+        Theme::BACKGROUND);
 
-    if (!playlist.empty())
+    String artist = song.artist;
+
+    if (artist.length() > 20)
     {
-        // titleMarquee.draw(
-        //     tft,
-        //     20,
-        //     195,
-        //     200,
-        //     song.title,
-        //     Theme::TEXT,
-        //     Theme::BACKGROUND);
-        tft.print(Widgets::fitText(tft, song.title.c_str(), 180));
-    }
-    else
-    {
-        tft.print("No Music");
+        artist = artist.substring(0, 17) + "...";
     }
 
-    // Artist
-    tft.setTextSize(1);
-
-    tft.setTextColor(
+    ui.drawCenteredText(
+        artist,
+        ui.nextLine(layout, 1),
+        1,
         Theme::MUTED);
-
-    tft.setCursor(
-        20,
-        220);
-
-    tft.print(song.artist);
-}
-
-void Music::drawPlaybackState()
-{
-    tft.setCursor(20, 290);
-
-    tft.setTextSize(1);
-
-    if (audio.isPlaying())
-    {
-        tft.setTextColor(
-            Theme::PRIMARY,
-            Theme::BACKGROUND);
-
-        tft.print("Playing ");
-    }
-    else
-    {
-        tft.setTextColor(
-            Theme::MUTED,
-            Theme::BACKGROUND);
-
-        tft.print("Paused  ");
-    }
 }
 
 void Music::drawStaticUI()
 {
-    drawAlbumArt();
+    UI::VerticalLayout body(55);
+
+    // Album
+    int16_t albumY = ui.nextBlock(
+        body,
+        kAlbumArtSize,
+        16);
+
+    drawAlbumArt(
+        ui.centerX(kAlbumArtSize),
+        albumY);
+
+    // Track Info
+    int16_t trackY = body.currentY;
+
+    drawTrack(trackY);
+
+    // Progress section
+    int16_t progressY = body.currentY + 18;
+
+    drawProgressSection(progressY + 10);
+
+    drawTransportControls(controlsY_);
+}
+
+void Music::drawTransportControls(int16_t y)
+{
+    constexpr int16_t spacing = 80;
+    constexpr int16_t centerX = 120;
+
+    Widgets::drawIcon(
+        tft,
+        centerX - spacing,
+        y,
+        Widgets::Icon::Previous,
+        Theme::TEXT);
+
+    tft.fillRect(
+        centerX - 12,
+        y - 12,
+        24,
+        24,
+        Theme::BACKGROUND);
+
+    Widgets::drawIcon(
+        tft,
+        centerX,
+        y,
+        audio.isPlaying()
+            ? Widgets::Icon::Pause
+            : Widgets::Icon::Play,
+        Theme::PRIMARY);
+
+    Widgets::drawIcon(
+        tft,
+        centerX + spacing,
+        y,
+        Widgets::Icon::Next,
+        Theme::TEXT);
+}
+
+void Music::drawProgressSection(int16_t y)
+{
+    progressSectionY_ = y;
+
+    drawProgressOutline();
+    drawElapsedTime();
+    drawProgressFill();
 }
 
 void Music::drawProgressOutline()
@@ -287,9 +321,9 @@ void Music::drawProgressOutline()
     Widgets::drawProgressOutline(
         tft,
         20,
-        265,
+        progressSectionY_ + 20,
         200,
-        10,
+        12,
         Theme::PRIMARY);
 }
 
@@ -315,10 +349,10 @@ void Music::drawElapsedTime()
         Theme::TEXT,
         Theme::BACKGROUND);
 
-    tft.setCursor(20, 245);
+    tft.setCursor(20, progressSectionY_);
     tft.print(elapsedText);
 
-    tft.setCursor(185, 245);
+    tft.setCursor(185, progressSectionY_);
     tft.print(durationText);
 }
 
@@ -329,9 +363,9 @@ void Music::drawProgressFill()
     Widgets::drawProgressFill(
         tft,
         20,
-        265,
+        progressSectionY_ + 20,
         200,
-        10,
+        12,
         elapsed,
         audio.getDuration() * 1000,
         Theme::PRIMARY,
@@ -341,35 +375,37 @@ void Music::drawProgressFill()
 void Music::drawVolumeOverlay()
 {
     constexpr int16_t width = 160;
-    constexpr int16_t height = 70;
+    constexpr int16_t height = 90;
 
-    constexpr int16_t x = (240 - width) / 2;
-    constexpr int16_t y = (320 - height) / 2;
+    auto box = ui.centerRect(width, height);
 
     Widgets::drawOverlayBox(
         tft,
-        x,
-        y,
+        box.x,
+        box.y,
         width,
         height);
 
-    tft.setTextColor(Theme::TEXT);
-    tft.setTextSize(2);
+    UI::VerticalLayout layout(box.y + 20);
 
-    tft.setCursor(x + 40, y + 10);
-    tft.print("Volume");
+    ui.drawCenteredText(
+        "Volume",
+        ui.nextLine(layout, 2, 12),
+        2,
+        Theme::TEXT);
 
     Widgets::drawProgressOutline(
         tft,
-        x + 15,
-        y + 40,
+        box.x + 15,
+        layout.currentY,
         130,
         8,
         Theme::PRIMARY);
+
     Widgets::drawProgressFill(
         tft,
-        x + 15,
-        y + 40,
+        box.x + 15,
+        layout.currentY,
         130,
         8,
         audio.getVolume(),
@@ -377,12 +413,13 @@ void Music::drawVolumeOverlay()
         Theme::PRIMARY,
         Theme::BACKGROUND);
 
-    tft.setTextSize(1);
-    tft.setTextColor(Theme::TEXT);
+    layout.currentY += 18;
 
-    tft.setCursor(x + 50, y + 55);
-    tft.print(audio.getVolume());
-    tft.print("%");
+    ui.drawCenteredText(
+        String(audio.getVolume()) + "%",
+        layout.currentY,
+        1,
+        Theme::TEXT);
 }
 
 void Music::playCurrentTrack()
@@ -395,13 +432,12 @@ void Music::playCurrentTrack()
     Song &song = playlist[currentTrack];
 
     audio.play(song.path);
+    marqueeText.reset();
 
     elapsed = 0;
+    lastElapsedSecond_ = UINT32_MAX;
 
-    drawTrack();
-    drawElapsedTime();
-    drawProgressFill();
-    drawPlaybackState();
+    draw();
 }
 
 bool Music::handleInput(InputEvent event)
@@ -426,7 +462,6 @@ bool Music::handleInput(InputEvent event)
         volumeOverlayStart_ = millis();
 
         drawVolumeOverlay();
-        drawPlaybackState();
         return true;
         break;
 
@@ -443,7 +478,6 @@ bool Music::handleInput(InputEvent event)
         volumeOverlayStart_ = millis();
 
         drawVolumeOverlay();
-        drawPlaybackState();
         return true;
         break;
 

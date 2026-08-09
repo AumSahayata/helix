@@ -65,7 +65,7 @@ This roadmap tracks the firmware evolution of Helix.
 
 - [x] Volume control
 - [ ] Album artwork
-- [ ] Metadata parsing
+- [x] Metadata parsing
 
 ---
 

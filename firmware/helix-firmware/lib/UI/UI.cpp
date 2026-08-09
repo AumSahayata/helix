@@ -1,6 +1,6 @@
 #include "UI.h"
 
-UI::UI(Adafruit_ST7789& display)
+UI::UI(Adafruit_ST7789 &display)
     : tft(display)
 {
 }
@@ -10,17 +10,30 @@ void UI::clear()
     tft.fillScreen(Theme::BACKGROUND);
 }
 
-void UI::drawHeader(const char* title)
+void UI::drawHeader(const char *title)
 {
-    tft.setTextColor(Theme::PRIMARY);
-    tft.setTextSize(2);
+    constexpr int16_t kPadding = 10;
 
-    // Brand
-    tft.setCursor(10, 15);
+    constexpr int16_t kBrandY = 15;
+    constexpr int16_t kTitleY = 20;
+
+    constexpr int16_t kDividerY = 45;
+
+    constexpr uint8_t kBrandSize = 2;
+    constexpr uint8_t kTitleSize = 1;
+
+    // ---------- Brand ----------
+    tft.setTextSize(kBrandSize);
+    tft.setTextColor(Theme::PRIMARY);
+
+    tft.setCursor(
+        kPadding,
+        kBrandY);
+
     tft.print("HELIX");
 
-    // Screen title
-    tft.setTextSize(1);
+    // ---------- Title ----------
+    tft.setTextSize(kTitleSize);
     tft.setTextColor(Theme::MUTED);
 
     int16_t x1, y1;
@@ -33,20 +46,20 @@ void UI::drawHeader(const char* title)
         &x1,
         &y1,
         &w,
-        &h
-    );
+        &h);
 
-    // Right-align title
-    tft.setCursor(230 - w, 20);
+    tft.setCursor(
+        tft.width() - kPadding - w,
+        kTitleY);
+
     tft.print(title);
 
-    // Separator
+    // ---------- Divider ----------
     tft.drawFastHLine(
-        10,
-        45,
-        220,
-        Theme::PRIMARY
-    );
+        kPadding,
+        kDividerY,
+        tft.width() - (kPadding * 2),
+        Theme::PRIMARY);
 }
 
 void UI::drawMenuItem(
@@ -54,41 +67,178 @@ void UI::drawMenuItem(
     const char *text,
     bool selected)
 {
-    constexpr int16_t kMenuStartY = 75;
-    constexpr int16_t kMenuItemSpacing = 35;
+    constexpr int16_t kPadding = 10;
 
-    int y = kMenuStartY + (index * kMenuItemSpacing);
+    constexpr int16_t kStartY = 75;
+    constexpr int16_t kItemSpacing = 35;
+    constexpr int16_t kItemVerticalOffset = 7;
 
-    // Clear only this menu row
+    constexpr int16_t kItemHeight = 30;
+    constexpr int16_t kCornerRadius = 5;
+
+    constexpr int16_t kTextPadding = 15;
+
+    constexpr uint8_t kTextSize = 2;
+
+    const int16_t y = kStartY + (index * kItemSpacing);
+
+    const int16_t itemWidth = tft.width() - (kPadding * 2);
+
+    // Clear row
     tft.fillRect(
-        10,
-        y - 7,
-        220,
-        30,
+        kPadding,
+        y - kItemVerticalOffset,
+        itemWidth,
+        kItemHeight,
         Theme::BACKGROUND);
 
-    tft.setTextSize(2);
+    tft.setTextSize(kTextSize);
 
     if (selected)
     {
         tft.fillRoundRect(
-            10,
-            y - 7,
-            220,
-            30,
-            5,
+            kPadding,
+            y - kItemVerticalOffset,
+            itemWidth,
+            kItemHeight,
+            kCornerRadius,
             Theme::PRIMARY);
 
         tft.setTextColor(Theme::BACKGROUND);
-        tft.setCursor(25, y);
+
+        tft.setCursor(
+            kPadding + kTextPadding,
+            y);
+
         tft.print("> ");
         tft.print(text);
     }
     else
     {
         tft.setTextColor(Theme::TEXT);
-        tft.setCursor(25, y);
+
+        tft.setCursor(
+            kPadding + kTextPadding,
+            y);
+
         tft.print("  ");
         tft.print(text);
     }
+}
+
+int16_t UI::centerX(int16_t width) const
+{
+    return (tft.width() - width) / 2;
+}
+
+int16_t UI::centerY(int16_t height) const
+{
+    return (tft.height() - height) / 2;
+}
+
+UI::Position UI::centerRect(
+    int16_t width,
+    int16_t height) const
+{
+    return {
+        centerX(width),
+        centerY(height)};
+}
+
+UI::Position UI::centeredTextPosition(
+    const String &text,
+    int16_t centerY,
+    uint8_t size,
+    bool centerVertically) const
+{
+    int16_t x1, y1;
+    uint16_t w, h;
+
+    tft.setTextSize(size);
+
+    tft.getTextBounds(
+        text,
+        0,
+        0,
+        &x1,
+        &y1,
+        &w,
+        &h);
+
+    Position pos;
+
+    pos.x = centerX(w);
+
+    if (centerVertically)
+    {
+        pos.y = centerY - (h / 2);
+    }
+    else
+    {
+        pos.y = centerY;
+    }
+
+    return pos;
+}
+
+void UI::drawCenteredText(
+    const String &text,
+    int16_t centerY,
+    uint8_t size,
+    uint16_t color,
+    bool centerVertically) const
+{
+    Position pos = centeredTextPosition(
+        text,
+        centerY,
+        size,
+        centerVertically);
+
+    tft.setTextSize(size);
+    tft.setTextColor(color);
+    tft.setCursor(pos.x, pos.y);
+    tft.print(text);
+}
+
+int16_t UI::textHeight(uint8_t size) const
+{
+    int16_t x1, y1;
+    uint16_t w, h;
+
+    tft.setTextSize(size);
+
+    tft.getTextBounds(
+        "Ag",
+        0,
+        0,
+        &x1,
+        &y1,
+        &w,
+        &h);
+
+    return h;
+}
+
+int16_t UI::nextLine(
+    VerticalLayout &layout,
+    uint8_t textSize,
+    int16_t gap) const
+{
+    int16_t y = layout.currentY;
+
+    layout.currentY += textHeight(textSize) + gap;
+
+    return y;
+}
+
+int16_t UI::nextBlock(
+    VerticalLayout &layout,
+    int16_t blockHeight,
+    int16_t gap) const
+{
+    int16_t y = layout.currentY;
+
+    layout.currentY += blockHeight + gap;
+
+    return y;
 }
