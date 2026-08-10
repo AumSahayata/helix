@@ -65,24 +65,29 @@ void UI::drawHeader(const char *title)
 void UI::drawMenuItem(
     int index,
     const char *text,
-    bool selected)
+    bool selected,
+    Icons::Type icon)
 {
     constexpr int16_t kPadding = 10;
-
     constexpr int16_t kStartY = 75;
     constexpr int16_t kItemSpacing = 35;
     constexpr int16_t kItemVerticalOffset = 7;
-
     constexpr int16_t kItemHeight = 30;
     constexpr int16_t kCornerRadius = 5;
+    constexpr int16_t kTextSize = 2;
 
-    constexpr int16_t kTextPadding = 15;
-
-    constexpr uint8_t kTextSize = 2;
+    constexpr int16_t kIconX = 24;
+    constexpr int16_t kTextX = 42;
 
     const int16_t y = kStartY + (index * kItemSpacing);
-
     const int16_t itemWidth = tft.width() - (kPadding * 2);
+    const int16_t centerY = y + (kItemHeight / 2) - kItemVerticalOffset;
+
+    const uint16_t bgColor =
+        selected ? Theme::PRIMARY : Theme::BACKGROUND;
+
+    const uint16_t textColor =
+        selected ? Theme::BACKGROUND : Theme::TEXT;
 
     // Clear row
     tft.fillRect(
@@ -91,8 +96,6 @@ void UI::drawMenuItem(
         itemWidth,
         kItemHeight,
         Theme::BACKGROUND);
-
-    tft.setTextSize(kTextSize);
 
     if (selected)
     {
@@ -103,27 +106,22 @@ void UI::drawMenuItem(
             kItemHeight,
             kCornerRadius,
             Theme::PRIMARY);
-
-        tft.setTextColor(Theme::BACKGROUND);
-
-        tft.setCursor(
-            kPadding + kTextPadding,
-            y);
-
-        tft.print("> ");
-        tft.print(text);
     }
-    else
+
+    if (icon != Icons::Type::None)
     {
-        tft.setTextColor(Theme::TEXT);
-
-        tft.setCursor(
-            kPadding + kTextPadding,
-            y);
-
-        tft.print("  ");
-        tft.print(text);
+        Icons::draw(
+            tft,
+            kIconX,
+            centerY,
+            icon,
+            textColor);
     }
+
+    tft.setTextSize(kTextSize);
+    tft.setTextColor(textColor);
+    tft.setCursor(kTextX, y);
+    tft.print(text);
 }
 
 int16_t UI::centerX(int16_t width) const

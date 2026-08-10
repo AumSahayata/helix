@@ -18,6 +18,7 @@ struct Song
     String artist = "Unknown";
     uint32_t duration = 0;
     String album;
+    String menuTitle;
 
     bool metadataLoaded = false;
 };
@@ -53,7 +54,33 @@ private:
     UI &ui;
     MusicLibrary &library;
 
+    enum class View
+    {
+        Library,
+        Player
+    };
+
+    View currentView = View::Library;
+
+    int selectedSong = 0;
+    int scrollOffset = 0;
+
+    void drawLibrary();
+    void drawLibraryScreen();
+    void drawLibraryRows();
+
+    void drawPlayer();
+    void updatePlayer();
+
+    static constexpr int kPlayRandomIndex = -1;
+    static constexpr int kVisibleSongs = 6;
+
+    bool handleLibraryInput(InputEvent event);
+    bool handlePlayerInput(InputEvent event);
+
     int currentTrack = 0;
+
+    uint8_t currentArtworkIndex = 0;
 
     uint32_t elapsed = 0;
 

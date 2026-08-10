@@ -1,101 +1,5 @@
 #include "Widgets.h"
 
-namespace
-{
-    constexpr int16_t kIconSize = 8;
-    constexpr int16_t kIconHeight = 16;
-    constexpr int16_t kBarWidth = 3;
-    constexpr int16_t kGap = 4;
-}
-
-static void drawPlayIcon(
-    Adafruit_ST7789 &tft,
-    int16_t centerX,
-    int16_t centerY,
-    uint16_t color)
-{
-
-    tft.fillTriangle(
-        centerX - kIconSize / 2,
-        centerY - kIconSize,
-        centerX - kIconSize / 2,
-        centerY + kIconSize,
-        centerX + kIconSize,
-        centerY,
-        color);
-}
-
-static void drawPauseIcon(
-    Adafruit_ST7789 &tft,
-    int16_t centerX,
-    int16_t centerY,
-    uint16_t color)
-{
-    tft.fillRect(
-        centerX - kGap - kBarWidth,
-        centerY - kIconHeight / 2,
-        kBarWidth,
-        kIconHeight,
-        color);
-
-    tft.fillRect(
-        centerX + kGap,
-        centerY - kIconHeight / 2,
-        kBarWidth,
-        kIconHeight,
-        color);
-}
-
-static void drawPreviousIcon(
-    Adafruit_ST7789 &tft,
-    int16_t centerX,
-    int16_t centerY,
-    uint16_t color)
-{
-    // Triangle (pointing left)
-    tft.fillTriangle(
-        centerX + kIconSize / 2,
-        centerY - kIconSize,
-        centerX + kIconSize / 2,
-        centerY + kIconSize,
-        centerX - kIconSize / 2,
-        centerY,
-        color);
-
-    // Left bar
-    tft.fillRect(
-        centerX - kIconSize - kBarWidth,
-        centerY - kIconHeight / 2,
-        kBarWidth,
-        kIconHeight,
-        color);
-}
-
-static void drawNextIcon(
-    Adafruit_ST7789 &tft,
-    int16_t centerX,
-    int16_t centerY,
-    uint16_t color)
-{
-    // Triangle
-    tft.fillTriangle(
-        centerX - kIconSize / 2,
-        centerY - kIconSize,
-        centerX - kIconSize / 2,
-        centerY + kIconSize,
-        centerX + kIconSize / 2,
-        centerY,
-        color);
-
-    // Right bar
-    tft.fillRect(
-        centerX + kIconSize,
-        centerY - kIconHeight / 2,
-        kBarWidth,
-        kIconHeight,
-        color);
-}
-
 namespace Widgets
 {
     void formatTime(
@@ -118,20 +22,39 @@ namespace Widgets
             seconds);
     }
 
-    String fitText(
+    String ellipsize(
         Adafruit_ST7789 &tft,
-        const char *text,
-        int maxWidth)
+        const String &text,
+        int16_t maxWidth,
+        uint8_t textSize)
     {
-        String result = text;
+        tft.setTextSize(textSize);
 
         int16_t x, y;
         uint16_t w, h;
 
-        while (true)
+        tft.getTextBounds(
+            text,
+            0,
+            0,
+            &x,
+            &y,
+            &w,
+            &h);
+
+        if (w <= maxWidth)
         {
+            return text;
+        }
+
+        String result = text;
+
+        while (result.length() > 0)
+        {
+            String candidate = result + "...";
+
             tft.getTextBounds(
-                result,
+                candidate,
                 0,
                 0,
                 &x,
@@ -140,125 +63,92 @@ namespace Widgets
                 &h);
 
             if (w <= maxWidth)
-                break;
-
-            if (result.length() <= 3)
-                break;
+            {
+                return candidate;
+            }
 
             result.remove(result.length() - 1);
         }
 
-        if (result != text)
-        {
-            result += "...";
-        }
-
-        return result;
+        return "...";
     }
-}
 
-void Widgets::drawProgressOutline(
-    Adafruit_ST7789 &tft,
-    int x,
-    int y,
-    int width,
-    int height,
-    uint16_t color)
-{
-    tft.drawRoundRect(
-        x,
-        y,
-        width,
-        height,
-        4,
-        color);
-}
-
-void Widgets::drawProgressFill(
-    Adafruit_ST7789 &tft,
-    int x,
-    int y,
-    int width,
-    int height,
-    uint32_t value,
-    uint32_t maxValue,
-    uint16_t color,
-    uint16_t background)
-{
-    if (maxValue == 0)
-        return;
-
-    int innerWidth = width - 4;
-
-    int fill =
-        (value * innerWidth) /
-        maxValue;
-
-    fill = constrain(fill, 0, innerWidth);
-
-    tft.fillRect(
-        x + 2,
-        y + 2,
-        innerWidth,
-        height - 4,
-        background);
-
-    tft.fillRect(
-        x + 2,
-        y + 2,
-        fill,
-        height - 4,
-        color);
-}
-
-void Widgets::drawOverlayBox(
-    Adafruit_ST7789 &tft,
-    int16_t x,
-    int16_t y,
-    int16_t width,
-    int16_t height)
-{
-    tft.fillRoundRect(
-        x,
-        y,
-        width,
-        height,
-        8,
-        ST77XX_BLACK);
-
-    tft.drawRoundRect(
-        x,
-        y,
-        width,
-        height,
-        8,
-        ST77XX_WHITE);
-}
-
-void Widgets::drawIcon(
-    Adafruit_ST7789 &tft,
-    int16_t centerX,
-    int16_t centerY,
-    Icon icon,
-    uint16_t color)
-{
-    switch (icon)
+    void drawProgressOutline(
+        Adafruit_ST7789 &tft,
+        int x,
+        int y,
+        int width,
+        int height,
+        uint16_t color)
     {
-    case Icon::Previous:
-        drawPreviousIcon(tft, centerX, centerY, color);
-        break;
+        tft.drawRoundRect(
+            x,
+            y,
+            width,
+            height,
+            4,
+            color);
+    }
 
-    case Icon::Play:
-        drawPlayIcon(tft, centerX, centerY, color);
-        break;
+    void drawProgressFill(
+        Adafruit_ST7789 &tft,
+        int x,
+        int y,
+        int width,
+        int height,
+        uint32_t value,
+        uint32_t maxValue,
+        uint16_t color,
+        uint16_t background)
+    {
+        if (maxValue == 0)
+            return;
 
-    case Icon::Pause:
-        drawPauseIcon(tft, centerX, centerY, color);
-        break;
+        int innerWidth = width - 4;
 
-    case Icon::Next:
-        drawNextIcon(tft, centerX, centerY, color);
-        break;
+        int fill =
+            (value * innerWidth) /
+            maxValue;
+
+        fill = constrain(fill, 0, innerWidth);
+
+        tft.fillRect(
+            x + 2,
+            y + 2,
+            innerWidth,
+            height - 4,
+            background);
+
+        tft.fillRect(
+            x + 2,
+            y + 2,
+            fill,
+            height - 4,
+            color);
+    }
+
+    void drawOverlayBox(
+        Adafruit_ST7789 &tft,
+        int16_t x,
+        int16_t y,
+        int16_t width,
+        int16_t height)
+    {
+        tft.fillRoundRect(
+            x,
+            y,
+            width,
+            height,
+            8,
+            ST77XX_BLACK);
+
+        tft.drawRoundRect(
+            x,
+            y,
+            width,
+            height,
+            8,
+            ST77XX_WHITE);
     }
 }
 

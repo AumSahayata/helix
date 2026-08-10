@@ -152,6 +152,7 @@ void setup()
   pomodoro.begin();
   music.begin();
   settingsApp.begin();
+  randomSeed(micros());
 
   startup.finishTask();
   startup.tick();

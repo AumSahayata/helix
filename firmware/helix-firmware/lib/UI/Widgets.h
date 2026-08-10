@@ -3,38 +3,19 @@
 #include <Arduino.h>
 #include <Adafruit_ST7789.h>
 
+#include "Icons.h"
+
 namespace Widgets
 {
-    enum class Icon
-    {
-        Previous,
-        Play,
-        Pause,
-        Next,
-        Folder,
-        Music,
-        Battery,
-        Bluetooth,
-        Settings,
-        Search,
-        Back
-    };
-
-    void drawIcon(
-        Adafruit_ST7789 &tft,
-        int16_t centerX,
-        int16_t centerY,
-        Icon icon,
-        uint16_t color);
-
     void formatTime(
         uint32_t milliseconds,
         char *buffer);
 
-    String fitText(
+    String ellipsize(
         Adafruit_ST7789 &tft,
-        const char *text,
-        int maxWidth);
+        const String &text,
+        int16_t maxWidth,
+        uint8_t textSize = 2);
 
     void drawProgressOutline(
         Adafruit_ST7789 &tft,

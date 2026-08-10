@@ -1,5 +1,6 @@
 #include "Music.h"
 #include <Widgets.h>
+#include "Assets/AlbumArt/AlbumArt.h"
 
 Music::Music(
     Adafruit_ST7789 &display,
@@ -39,11 +40,67 @@ void Music::onEnter()
     {
         drawLoadingScreen();
         library.load();
+    }
+
+    if (playlist.empty())
+    {
         setPlaylist(library.tracks());
     }
 }
 
 void Music::draw()
+{
+    switch (currentView)
+    {
+    case View::Library:
+        drawLibraryScreen();
+        break;
+
+    case View::Player:
+        drawPlayer();
+        break;
+    }
+}
+
+void Music::drawLibraryScreen()
+{
+    ui.clear();
+    ui.drawHeader("MUSIC");
+
+    drawLibraryRows();
+}
+
+void Music::drawLibraryRows()
+{
+    int itemCount = playlist.size() + 1;
+
+    for (int row = 0; row < kVisibleSongs; row++)
+    {
+        int menuIndex = scrollOffset + row;
+
+        if (menuIndex >= itemCount)
+            break;
+
+        if (menuIndex == 0)
+        {
+            ui.drawMenuItem(
+                row,
+                "Play Random",
+                selectedSong == 0,
+                Icons::Type::Random);
+        }
+        else
+        {
+            ui.drawMenuItem(
+                row,
+                playlist[menuIndex - 1].menuTitle.c_str(),
+                selectedSong == menuIndex,
+                Icons::Type::Music);
+        }
+    }
+}
+
+void Music::drawPlayer()
 {
     ui.clear();
 
@@ -147,6 +204,8 @@ void Music::nextTrack()
         currentTrack = 0;
     }
 
+    currentArtworkIndex = random(Assets::kAlbumArtCount);
+
     playCurrentTrack();
 }
 
@@ -166,6 +225,8 @@ void Music::previousTrack()
         currentTrack--;
     }
 
+    currentArtworkIndex = random(Assets::kAlbumArtCount);
+
     playCurrentTrack();
 }
 
@@ -177,28 +238,21 @@ bool Music::isPlaying() const
 void Music::drawAlbumArt(int16_t x, int16_t y)
 {
     constexpr int size = 140;
+    static uint8_t index = 0;
 
-    tft.drawRoundRect(
+    tft.drawRGBBitmap(
+        x,
+        y,
+        Assets::albumArt[currentArtworkIndex],
+        size,
+        size);
+
+    tft.drawRect(
         x,
         y,
         size,
         size,
-        8,
         Theme::PRIMARY);
-
-    UI::VerticalLayout layout(y + 30);
-
-    ui.drawCenteredText(
-        "\x0E",
-        ui.nextLine(layout, 4, 8),
-        4,
-        Theme::PRIMARY);
-
-    ui.drawCenteredText(
-        "HELIX",
-        ui.nextLine(layout, 2, 12),
-        2,
-        Theme::MUTED);
 }
 
 void Music::drawTrack(int16_t y)
@@ -276,11 +330,11 @@ void Music::drawTransportControls(int16_t y)
     constexpr int16_t spacing = 80;
     constexpr int16_t centerX = 120;
 
-    Widgets::drawIcon(
+    Icons::draw(
         tft,
         centerX - spacing,
         y,
-        Widgets::Icon::Previous,
+        Icons::Type::Previous,
         Theme::TEXT);
 
     tft.fillRect(
@@ -290,20 +344,20 @@ void Music::drawTransportControls(int16_t y)
         24,
         Theme::BACKGROUND);
 
-    Widgets::drawIcon(
+    Icons::draw(
         tft,
         centerX,
         y,
         audio.isPlaying()
-            ? Widgets::Icon::Pause
-            : Widgets::Icon::Play,
+            ? Icons::Type::Pause
+            : Icons::Type::Play,
         Theme::PRIMARY);
 
-    Widgets::drawIcon(
+    Icons::draw(
         tft,
         centerX + spacing,
         y,
-        Widgets::Icon::Next,
+        Icons::Type::Next,
         Theme::TEXT);
 }
 
@@ -442,6 +496,109 @@ void Music::playCurrentTrack()
 
 bool Music::handleInput(InputEvent event)
 {
+    switch (currentView)
+    {
+    case View::Library:
+        return handleLibraryInput(event);
+
+    case View::Player:
+        return handlePlayerInput(event);
+    }
+
+    return false;
+}
+
+bool Music::handleLibraryInput(InputEvent event)
+{
+    switch (event)
+    {
+    case InputEvent::UP_PRESS:
+    case InputEvent::UP_HOLD:
+    case InputEvent::UP_REPEAT:
+        if (selectedSong > 0)
+        {
+            selectedSong--;
+
+            if (selectedSong < scrollOffset)
+            {
+                scrollOffset--;
+
+                // Entire visible list changed
+                drawLibraryRows();
+            }
+            else
+            {
+                // Only selection changed
+                drawLibraryRows();
+            }
+        }
+        return true;
+
+    case InputEvent::DOWN_PRESS:
+    case InputEvent::DOWN_HOLD:
+    case InputEvent::DOWN_REPEAT:
+        if (selectedSong < playlist.size())
+        {
+            selectedSong++;
+
+            if (selectedSong >= scrollOffset + kVisibleSongs)
+            {
+                scrollOffset++;
+
+                drawLibraryRows();
+            }
+            else
+            {
+                drawLibraryRows();
+            }
+        }
+        return true;
+
+    case InputEvent::SELECT_PRESS:
+        if (playlist.empty())
+        {
+            return true;
+        }
+
+        if (selectedSong == 0)
+        {
+            currentTrack = random(playlist.size());
+        }
+        else
+        {
+            currentTrack = selectedSong - 1;
+        }
+
+        currentArtworkIndex = random(Assets::kAlbumArtCount);
+
+        playCurrentTrack();
+
+        currentView = View::Player;
+
+        draw();
+
+        return true;
+
+    case InputEvent::SELECT_HOLD:
+        currentTrack = random(playlist.size());
+        currentArtworkIndex = random(Assets::kAlbumArtCount);
+
+        playCurrentTrack();
+
+        currentView = View::Player;
+
+        draw();
+        return true;
+
+    default:
+        return false;
+    }
+
+    return false;
+}
+
+bool Music::handlePlayerInput(InputEvent event)
+{
     switch (event)
     {
     case InputEvent::SELECT_PRESS:
@@ -481,6 +638,24 @@ bool Music::handleInput(InputEvent event)
         return true;
         break;
 
+    case InputEvent::BACK_PRESS:
+    {
+        selectedSong = currentTrack + 1;
+
+        scrollOffset = max(-1, selectedSong - (kVisibleSongs / 2));
+        int maxScroll = max(-1, (int)playlist.size() - kVisibleSongs);
+        scrollOffset = min(scrollOffset, maxScroll);
+
+        if (isPlaying())
+            playPause();
+
+        currentView = View::Library;
+
+        draw();
+
+        return true;
+    }
+
     default:
         return false;
         break;
@@ -512,6 +687,11 @@ void Music::setPlaylist(const std::vector<String> &files)
             }
             song.artist = "Unknown Artist";
             song.duration = 180000; // temporary 3 min
+            song.menuTitle = Widgets::ellipsize(
+                tft,
+                song.title,
+                170,
+                2);
 
             playlist.push_back(song);
         }
