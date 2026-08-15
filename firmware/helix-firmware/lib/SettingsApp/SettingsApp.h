@@ -6,6 +6,7 @@
 #include <App.h>
 #include <Input.h>
 #include <UI.h>
+#include <Logo.h>
 #include <Settings.h>
 #include <AudioPlayer.h>
 

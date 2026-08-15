@@ -24,6 +24,8 @@ namespace Icons
         Battery,
         Bluetooth,
         Settings,
+        Display,
+        Info,
         Search,
         Back
     };

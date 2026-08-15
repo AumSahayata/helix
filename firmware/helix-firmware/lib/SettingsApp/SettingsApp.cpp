@@ -5,11 +5,26 @@ namespace
 {
     constexpr int16_t kMenuStartY = 75;
     constexpr int16_t kMenuItemSpacing = 35;
-    constexpr uint8_t kMainMenuCount = 4;
 
     constexpr int16_t kVolumeStartY = 70;
     constexpr int16_t kVolumeBarWidth = 180;
     constexpr int16_t kVolumeBarHeight = 10;
+
+    struct MenuItem
+    {
+        const char *text;
+        Icons::Type icon;
+    };
+
+    constexpr MenuItem kMainMenuItems[] =
+        {
+            {"Audio", Icons::Type::Music},
+            {"Display", Icons::Type::Display},
+            {"System", Icons::Type::Settings},
+            {"About", Icons::Type::Info},
+    };
+
+    constexpr uint8_t kMainMenuCount = sizeof(kMainMenuItems) / sizeof(kMainMenuItems[0]);
 }
 
 SettingsApp::SettingsApp(
@@ -99,12 +114,16 @@ void SettingsApp::handleMainPageInput(InputEvent event)
         uint8_t old = mainSelection_;
 
         if (mainSelection_ == 0)
-            mainSelection_ = 3;
+        {
+            mainSelection_ = kMainMenuCount - 1;
+        }
         else
-            mainSelection_--;
+        {
+            --mainSelection_;
+        }
 
-        ui.drawMenuItem(old, getMainMenuText(old), false);
-        ui.drawMenuItem(mainSelection_, getMainMenuText(mainSelection_), true);
+        ui.drawMenuItem(old, kMainMenuItems[old].text, false, kMainMenuItems[old].icon);
+        ui.drawMenuItem(mainSelection_, kMainMenuItems[mainSelection_].text, true, kMainMenuItems[mainSelection_].icon);
     }
     else if (event == InputEvent::DOWN_PRESS)
     {
@@ -112,8 +131,8 @@ void SettingsApp::handleMainPageInput(InputEvent event)
 
         mainSelection_ = (mainSelection_ + 1) % kMainMenuCount;
 
-        ui.drawMenuItem(old, getMainMenuText(old), false);
-        ui.drawMenuItem(mainSelection_, getMainMenuText(mainSelection_), true);
+        ui.drawMenuItem(old, kMainMenuItems[old].text, false, kMainMenuItems[old].icon);
+        ui.drawMenuItem(mainSelection_, kMainMenuItems[mainSelection_].text, true, kMainMenuItems[mainSelection_].icon);
     }
     else if (event == InputEvent::SELECT_PRESS)
     {
@@ -239,10 +258,14 @@ void SettingsApp::drawCurrentPage()
 
 void SettingsApp::drawMainPage()
 {
-    ui.drawMenuItem(0, "Audio", mainSelection_ == 0);
-    ui.drawMenuItem(1, "Display", mainSelection_ == 1);
-    ui.drawMenuItem(2, "System", mainSelection_ == 2);
-    ui.drawMenuItem(3, "About", mainSelection_ == 3);
+    for (uint8_t i = 0; i < kMainMenuCount; ++i)
+    {
+        ui.drawMenuItem(
+            i,
+            kMainMenuItems[i].text,
+            mainSelection_ == i,
+            kMainMenuItems[i].icon);
+    }
 }
 
 void SettingsApp::drawAudioPage()
@@ -263,6 +286,78 @@ void SettingsApp::drawSystemPage()
 
 void SettingsApp::drawAboutPage()
 {
+    ui.clear();
+    ui.drawHeader("ABOUT");
+
+    UI::VerticalLayout layout(75);
+
+    // Logo
+    constexpr int16_t kLogoWidth = 91;
+    constexpr int16_t kLogoHeight = 115;
+
+    Logo::draw(
+        tft,
+        (tft.width() - kLogoWidth) / 2,
+        ui.nextBlock(layout, kLogoHeight, 25));
+
+    // Tagline
+    ui.drawCenteredText(
+        "Modular Handheld Companion",
+        ui.nextLine(layout, 1, 10),
+        1,
+        Theme::TEXT);
+
+    // Divider
+    tft.drawFastHLine(
+        20,
+        ui.nextLine(layout, 1, 10),
+        tft.width() - 40,
+        Theme::PRIMARY);
+
+    // Information
+    tft.setTextSize(1);
+
+    tft.setTextColor(Theme::TEXT);
+
+    int16_t y = ui.nextLine(layout, 1, 12);
+
+    tft.setCursor(20, y);
+    tft.print("Firmware");
+    tft.setCursor(120, y);
+    tft.print("v0.2.0-alpha");
+
+    y = ui.nextLine(layout, 1, 8);
+
+    tft.setCursor(20, y);
+    tft.print("Board");
+    tft.setCursor(120, y);
+    tft.print("ESP32-S3 (N16R8)");
+
+    y = ui.nextLine(layout, 1, 8);
+
+    tft.setCursor(20, y);
+    tft.print("License");
+    tft.setCursor(120, y);
+    tft.print("MIT");
+
+    // Divider
+    tft.drawFastHLine(
+        20,
+        ui.nextLine(layout, 1, 12),
+        tft.width() - 40,
+        Theme::PRIMARY);
+
+    ui.drawCenteredText(
+        "github.com/AumSahayata/Helix",
+        ui.nextLine(layout, 1, 12),
+        1,
+        Theme::PRIMARY);
+
+    ui.drawCenteredText(
+        "Open Source",
+        ui.nextLine(layout, 1, 8),
+        1,
+        Theme::MUTED);
 }
 
 void SettingsApp::drawVolumePageStatic()
@@ -361,21 +456,4 @@ void SettingsApp::reset()
 
     mainSelection_ = 0;
     audioSelection_ = 0;
-}
-
-const char *SettingsApp::getMainMenuText(uint8_t index)
-{
-    switch (index)
-    {
-    case 0:
-        return "Audio";
-    case 1:
-        return "Display";
-    case 2:
-        return "System";
-    case 3:
-        return "About";
-    default:
-        return "";
-    }
 }
