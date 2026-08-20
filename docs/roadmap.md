@@ -93,8 +93,7 @@ This roadmap tracks the firmware evolution of Helix.
 # Version 0.6 — Polish
 
 - [ ] Help overlay
-- [ ] Animations
-- [ ] Theme customization
+- [x] Theme customization
 - [ ] Performance optimization
 - [x] Boot animation
 - [ ] Error handling

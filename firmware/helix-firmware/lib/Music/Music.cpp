@@ -2,6 +2,9 @@
 #include <Widgets.h>
 #include "Assets/AlbumArt/AlbumArt.h"
 
+#include "Theme.h"
+#include "UI.h"
+
 Music::Music(
     Adafruit_ST7789 &display,
     UI &uiManager,
@@ -19,14 +22,22 @@ Music::Music(
                const String &artist,
                const String &album)
         {
+            if (playlist.empty())
+                return;
+
+            if (currentTrack < 0 ||
+                currentTrack >= static_cast<int>(playlist.size()))
+            {
+                return;
+            }
+
             Song &song = playlist[currentTrack];
 
             song.title = title;
             song.artist = artist;
             song.album = album;
             song.metadataLoaded = true;
-
-            drawStaticUI();
+            song.metadataDirty = true;
         });
 }
 
@@ -78,8 +89,8 @@ void Music::drawLibraryRows()
     {
         int menuIndex = scrollOffset + row;
 
-        if (menuIndex >= itemCount)
-            break;
+        if (menuIndex < 0 || menuIndex >= itemCount)
+            continue;
 
         if (menuIndex == 0)
         {
@@ -91,9 +102,11 @@ void Music::drawLibraryRows()
         }
         else
         {
+            const String &title = playlist[menuIndex - 1].menuTitle;
+
             ui.drawMenuItem(
                 row,
-                playlist[menuIndex - 1].menuTitle.c_str(),
+                title,
                 selectedSong == menuIndex,
                 Icons::Type::Music);
         }
@@ -123,21 +136,36 @@ void Music::drawLoadingScreen()
         "Loading...",
         ui.nextLine(layout, 2, 15),
         2,
-        Theme::TEXT);
+        Theme::colors().text);
 
     ui.drawCenteredText(
         "Music Library",
         ui.nextLine(layout, 1),
         1,
-        Theme::MUTED);
+        Theme::colors().muted);
 }
 
 void Music::update()
 {
+    if (!playlist.empty() &&
+        currentTrack >= 0 &&
+        currentTrack < static_cast<int>(playlist.size()))
+    {
+        Song &song = playlist[currentTrack];
+
+        if (song.metadataDirty)
+        {
+            song.metadataDirty = false;
+
+            if (currentView == View::Player)
+            {
+                drawStaticUI();
+            }
+        }
+    }
+
     if (!audio.isPlaying())
         return;
-
-    Song &song = playlist[currentTrack];
 
     elapsed = audio.getCurrentTime() * 1000;
     uint32_t currentSecond = elapsed / 1000;
@@ -165,8 +193,8 @@ void Music::update()
     {
         marqueeText.draw(
             tft,
-            Theme::TEXT,
-            Theme::BACKGROUND);
+            Theme::colors().text,
+            Theme::colors().background);
     }
 }
 
@@ -238,7 +266,6 @@ bool Music::isPlaying() const
 void Music::drawAlbumArt(int16_t x, int16_t y)
 {
     constexpr int size = 140;
-    static uint8_t index = 0;
 
     tft.drawRGBBitmap(
         x,
@@ -252,7 +279,7 @@ void Music::drawAlbumArt(int16_t x, int16_t y)
         y,
         size,
         size,
-        Theme::PRIMARY);
+        Theme::colors().primary);
 }
 
 void Music::drawTrack(int16_t y)
@@ -272,8 +299,8 @@ void Music::drawTrack(int16_t y)
     marqueeText.setText(tft, song.title);
     marqueeText.draw(
         tft,
-        Theme::TEXT,
-        Theme::BACKGROUND);
+        Theme::colors().text,
+        Theme::colors().background);
 
     int16_t artistY = ui.nextLine(layout, 1);
 
@@ -282,7 +309,7 @@ void Music::drawTrack(int16_t y)
         artistY,
         200,
         ui.textHeight(2),
-        Theme::BACKGROUND);
+        Theme::colors().background);
 
     String artist = song.artist;
 
@@ -295,7 +322,7 @@ void Music::drawTrack(int16_t y)
         artist,
         ui.nextLine(layout, 1),
         1,
-        Theme::MUTED);
+        Theme::colors().muted);
 }
 
 void Music::drawStaticUI()
@@ -335,14 +362,14 @@ void Music::drawTransportControls(int16_t y)
         centerX - spacing,
         y,
         Icons::Type::Previous,
-        Theme::TEXT);
+        Theme::colors().text);
 
     tft.fillRect(
         centerX - 12,
         y - 12,
         24,
         24,
-        Theme::BACKGROUND);
+        Theme::colors().background);
 
     Icons::draw(
         tft,
@@ -351,14 +378,14 @@ void Music::drawTransportControls(int16_t y)
         audio.isPlaying()
             ? Icons::Type::Pause
             : Icons::Type::Play,
-        Theme::PRIMARY);
+        Theme::colors().primary);
 
     Icons::draw(
         tft,
         centerX + spacing,
         y,
         Icons::Type::Next,
-        Theme::TEXT);
+        Theme::colors().text);
 }
 
 void Music::drawProgressSection(int16_t y)
@@ -378,13 +405,11 @@ void Music::drawProgressOutline()
         progressSectionY_ + 20,
         200,
         12,
-        Theme::PRIMARY);
+        Theme::colors().primary);
 }
 
 void Music::drawElapsedTime()
 {
-    Song &song = playlist[currentTrack];
-
     char elapsedText[6];
 
     char durationText[6];
@@ -400,8 +425,8 @@ void Music::drawElapsedTime()
     tft.setTextSize(1);
 
     tft.setTextColor(
-        Theme::TEXT,
-        Theme::BACKGROUND);
+        Theme::colors().text,
+        Theme::colors().background);
 
     tft.setCursor(20, progressSectionY_);
     tft.print(elapsedText);
@@ -412,8 +437,6 @@ void Music::drawElapsedTime()
 
 void Music::drawProgressFill()
 {
-    Song &song = playlist[currentTrack];
-
     Widgets::drawProgressFill(
         tft,
         20,
@@ -422,8 +445,8 @@ void Music::drawProgressFill()
         12,
         elapsed,
         audio.getDuration() * 1000,
-        Theme::PRIMARY,
-        Theme::BACKGROUND);
+        Theme::colors().primary,
+        Theme::colors().background);
 }
 
 void Music::drawVolumeOverlay()
@@ -446,7 +469,7 @@ void Music::drawVolumeOverlay()
         "Volume",
         ui.nextLine(layout, 2, 12),
         2,
-        Theme::TEXT);
+        Theme::colors().text);
 
     Widgets::drawProgressOutline(
         tft,
@@ -454,7 +477,7 @@ void Music::drawVolumeOverlay()
         layout.currentY,
         130,
         8,
-        Theme::PRIMARY);
+        Theme::colors().primary);
 
     Widgets::drawProgressFill(
         tft,
@@ -464,8 +487,8 @@ void Music::drawVolumeOverlay()
         8,
         audio.getVolume(),
         100,
-        Theme::PRIMARY,
-        Theme::BACKGROUND);
+        Theme::colors().primary,
+        Theme::colors().background);
 
     layout.currentY += 18;
 
@@ -473,7 +496,7 @@ void Music::drawVolumeOverlay()
         String(audio.getVolume()) + "%",
         layout.currentY,
         1,
-        Theme::TEXT);
+        Theme::colors().text);
 }
 
 void Music::playCurrentTrack()
@@ -521,7 +544,7 @@ bool Music::handleLibraryInput(InputEvent event)
 
             if (selectedSong < scrollOffset)
             {
-                scrollOffset--;
+                scrollOffset = max(0, scrollOffset - 1);
 
                 // Entire visible list changed
                 drawLibraryRows();
@@ -580,6 +603,11 @@ bool Music::handleLibraryInput(InputEvent event)
         return true;
 
     case InputEvent::SELECT_HOLD:
+        if (playlist.empty())
+        {
+            return true;
+        }
+
         currentTrack = random(playlist.size());
         currentArtworkIndex = random(Assets::kAlbumArtCount);
 
@@ -640,14 +668,25 @@ bool Music::handlePlayerInput(InputEvent event)
 
     case InputEvent::BACK_PRESS:
     {
+        if (playlist.empty())
+        {
+            currentView = View::Library;
+            selectedSong = 0;
+            scrollOffset = 0;
+            draw();
+            return true;
+        }
+
         selectedSong = currentTrack + 1;
 
-        scrollOffset = max(-1, selectedSong - (kVisibleSongs / 2));
-        int maxScroll = max(-1, (int)playlist.size() - kVisibleSongs);
+        int maxScroll = max(0, (int)playlist.size() + 1 - kVisibleSongs);
+        scrollOffset = max(0, selectedSong - (kVisibleSongs / 2));
         scrollOffset = min(scrollOffset, maxScroll);
 
         if (isPlaying())
+        {
             playPause();
+        }
 
         currentView = View::Library;
 

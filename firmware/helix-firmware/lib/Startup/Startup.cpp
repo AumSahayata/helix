@@ -3,7 +3,7 @@
 #include <Arduino.h>
 
 #include "Logo.h"
-#include "UI.h"
+#include "Theme.h"
 
 namespace
 {
@@ -36,7 +36,7 @@ void Startup::begin(uint8_t totalTasks)
     bootStartTime_ = millis();
     lastFrameTime_ = bootStartTime_;
 
-    tft.fillScreen(Theme::BACKGROUND);
+    tft.fillScreen(Theme::colors().background);
 
     drawStage(STAGE_ORDER[0]);
 
@@ -130,9 +130,9 @@ void Startup::drawStatus(const char *text)
         STATUS_Y,
         SCREEN_W,
         20,
-        Theme::BACKGROUND);
+        Theme::colors().background);
 
-    tft.setTextColor(Theme::TEXT);
+    tft.setTextColor(Theme::colors().text);
 
     tft.setTextSize(1);
 
@@ -148,7 +148,7 @@ void Startup::clearStatus()
         STATUS_Y,
         SCREEN_W,
         20,
-        Theme::BACKGROUND);
+        Theme::colors().background);
 }
 
 void Startup::drawStage(uint8_t stage)
@@ -177,7 +177,7 @@ void Startup::drawStage(uint8_t stage)
 
     if (stage == 10)
     {
-        tft.setTextColor(Theme::TEXT);
+        tft.setTextColor(Theme::colors().text);
 
         tft.setTextSize(3);
 
@@ -188,7 +188,7 @@ void Startup::drawStage(uint8_t stage)
         return;
     }
 
-    tft.setTextColor(Theme::TEXT);
+    tft.setTextColor(Theme::colors().text);
 
     tft.setTextSize(1);
 

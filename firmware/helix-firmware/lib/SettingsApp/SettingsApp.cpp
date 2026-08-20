@@ -1,5 +1,6 @@
 #include "SettingsApp.h"
 #include <Widgets.h>
+#include "Theme.h"
 
 namespace
 {
@@ -25,6 +26,16 @@ namespace
     };
 
     constexpr uint8_t kMainMenuCount = sizeof(kMainMenuItems) / sizeof(kMainMenuItems[0]);
+
+    constexpr Theme::Type kThemes[] =
+        {
+            Theme::Type::Slate,
+            Theme::Type::Forest,
+            Theme::Type::Sunset,
+            Theme::Type::Mono};
+
+    constexpr uint8_t kThemeCount =
+        sizeof(kThemes) / sizeof(kThemes[0]);
 }
 
 SettingsApp::SettingsApp(
@@ -67,12 +78,20 @@ bool SettingsApp::handleInput(InputEvent event)
             return true;
 
         case SettingsPage::Display:
+            changePage(SettingsPage::Main);
+            return true;
+
+        case SettingsPage::Theme:
+            changePage(SettingsPage::Display);
+            return true;
+
         case SettingsPage::System:
         case SettingsPage::About:
             changePage(SettingsPage::Main);
             return true;
 
         case SettingsPage::Main:
+            settings.save();
             return false; // Let main.cpp go Home
         }
     }
@@ -91,6 +110,16 @@ bool SettingsApp::handleInput(InputEvent event)
 
     case SettingsPage::Volume:
         handleVolumePageInput(event);
+        return true;
+        break;
+
+    case SettingsPage::Display:
+        handleDisplayPageInput(event);
+        return true;
+        break;
+
+    case SettingsPage::Theme:
+        handleThemeInput(event);
         return true;
         break;
 
@@ -183,9 +212,8 @@ void SettingsApp::handleVolumePageInput(InputEvent event)
     switch (event)
     {
     case InputEvent::BACK_PRESS:
-        settings.save();
         changePage(SettingsPage::Audio);
-        return;
+        break;
 
     case InputEvent::UP_PRESS:
     case InputEvent::UP_HOLD:
@@ -195,7 +223,7 @@ void SettingsApp::handleVolumePageInput(InputEvent event)
         settings.setVolume(audioPlayer.getVolume());
 
         drawVolumeValue();
-        return;
+        break;
     }
 
     case InputEvent::DOWN_PRESS:
@@ -206,11 +234,84 @@ void SettingsApp::handleVolumePageInput(InputEvent event)
         settings.setVolume(audioPlayer.getVolume());
 
         drawVolumeValue();
-        return;
+        break;
     }
 
     default:
-        return;
+        break;
+    }
+}
+
+void SettingsApp::handleDisplayPageInput(InputEvent event)
+{
+    if (event == InputEvent::SELECT_PRESS)
+    {
+        changePage(SettingsPage::Theme);
+    }
+}
+
+void SettingsApp::handleThemeInput(InputEvent event)
+{
+    switch (event)
+    {
+    case InputEvent::UP_PRESS:
+    case InputEvent::UP_HOLD:
+    case InputEvent::UP_REPEAT:
+        if (themeSelection_ > 0)
+        {
+            uint8_t oldSelection = themeSelection_;
+
+            --themeSelection_;
+
+            ui.drawMenuItem(
+                oldSelection,
+                Theme::name(kThemes[oldSelection]),
+                false);
+
+            ui.drawMenuItem(
+                themeSelection_,
+                Theme::name(kThemes[themeSelection_]),
+                true);
+        }
+
+        break;
+
+    case InputEvent::DOWN_PRESS:
+    case InputEvent::DOWN_HOLD:
+    case InputEvent::DOWN_REPEAT:
+        if (themeSelection_ < kThemeCount - 1)
+        {
+            uint8_t oldSelection = themeSelection_;
+
+            ++themeSelection_;
+
+            ui.drawMenuItem(
+                oldSelection,
+                Theme::name(kThemes[oldSelection]),
+                false);
+
+            ui.drawMenuItem(
+                themeSelection_,
+                Theme::name(kThemes[themeSelection_]),
+                true);
+        }
+        
+        break;
+
+    case InputEvent::SELECT_PRESS:
+        Theme::set(kThemes[themeSelection_]);
+
+        settings.setTheme(kThemes[themeSelection_]);
+        // Redraw using the new colors
+        drawThemePage();
+        break;
+
+    case InputEvent::BACK_PRESS:
+        changePage(SettingsPage::Display);
+        break;
+
+    default:
+        break;
     }
 }
 
@@ -236,6 +337,10 @@ void SettingsApp::drawCurrentPage()
 
     case SettingsPage::Display:
         drawDisplayPage();
+        break;
+
+    case SettingsPage::Theme:
+        drawThemePage();
         break;
 
     case SettingsPage::System:
@@ -278,6 +383,24 @@ void SettingsApp::drawAudioPage()
 
 void SettingsApp::drawDisplayPage()
 {
+    ui.drawMenuItem(
+        0,
+        "Theme",
+        displaySelection_ == 0);
+}
+
+void SettingsApp::drawThemePage()
+{
+    ui.clear();
+    ui.drawHeader("THEME");
+
+    for (uint8_t i = 0; i < kThemeCount; ++i)
+    {
+        ui.drawMenuItem(
+            i,
+            Theme::name(kThemes[i]),
+            themeSelection_ == i);
+    }
 }
 
 void SettingsApp::drawSystemPage()
@@ -299,26 +422,26 @@ void SettingsApp::drawAboutPage()
         tft,
         (tft.width() - kLogoWidth) / 2,
         95,
-        Theme::MUTED);
+        Theme::colors().muted);
 
     // Tagline
     ui.drawCenteredText(
         "Modular Handheld Companion",
         ui.nextLine(layout, 1, 10),
         1,
-        Theme::TEXT);
+        Theme::colors().text);
 
     // Divider
     tft.drawFastHLine(
         20,
         ui.nextLine(layout, 1, 10),
         tft.width() - 40,
-        Theme::PRIMARY);
+        Theme::colors().primary);
 
     // Information
     tft.setTextSize(1);
 
-    tft.setTextColor(Theme::TEXT);
+    tft.setTextColor(Theme::colors().text);
 
     int16_t y = ui.nextLine(layout, 1, 12);
 
@@ -346,19 +469,19 @@ void SettingsApp::drawAboutPage()
         20,
         ui.nextLine(layout, 1, 50),
         tft.width() - 40,
-        Theme::PRIMARY);
+        Theme::colors().primary);
 
     ui.drawCenteredText(
         "github.com/AumSahayata/Helix",
         ui.nextLine(layout, 1, 12),
         1,
-        Theme::PRIMARY);
+        Theme::colors().primary);
 
     ui.drawCenteredText(
         "Open Source",
         ui.nextLine(layout, 1, 8),
         1,
-        Theme::TEXT);
+        Theme::colors().text);
 }
 
 void SettingsApp::drawVolumePageStatic()
@@ -376,13 +499,13 @@ void SettingsApp::drawVolumePageStatic()
         40,
         tft.width(),
         tft.height() - 40,
-        Theme::BACKGROUND);
+        Theme::colors().background);
 
     ui.drawCenteredText(
         "Volume",
         titleY,
         2,
-        Theme::TEXT);
+        Theme::colors().text);
 
     Widgets::drawProgressOutline(
         tft,
@@ -390,20 +513,20 @@ void SettingsApp::drawVolumePageStatic()
         bar.y,
         kVolumeBarWidth,
         kVolumeBarHeight,
-        Theme::PRIMARY);
+        Theme::colors().primary);
 
     ui.drawCenteredText(
         "Press or Hold UP/DOWN to adjust",
         ui.nextLine(layout, 1, 8),
         1,
-        Theme::MUTED,
+        Theme::colors().muted,
         false);
 
     ui.drawCenteredText(
         "BACK to save",
         ui.nextLine(layout, 1),
         1,
-        Theme::MUTED,
+        Theme::colors().muted,
         false);
 }
 
@@ -419,19 +542,19 @@ void SettingsApp::drawVolumeValue()
     auto bar = ui.centerRect(kVolumeBarWidth, barY);
 
     tft.fillRect(
-        60,
-        95,
+        0,
+        120,
         tft.width(),
         45,
-        Theme::BACKGROUND);
+        Theme::colors().background);
 
-    String value = String(settings.getVolume()) + "%";
+    String value = String(audioPlayer.getVolume()) + "%";
 
     ui.drawCenteredText(
         value,
         140,
         3,
-        Theme::PRIMARY);
+        Theme::colors().primary);
 
     Widgets::drawProgressFill(
         tft,
@@ -439,10 +562,10 @@ void SettingsApp::drawVolumeValue()
         bar.y,
         kVolumeBarWidth,
         kVolumeBarHeight,
-        settings.getVolume(),
+        audioPlayer.getVolume(),
         100,
-        Theme::PRIMARY,
-        Theme::BACKGROUND);
+        Theme::colors().primary,
+        Theme::colors().background);
 }
 
 void SettingsApp::drawVolumePage()
@@ -456,5 +579,7 @@ void SettingsApp::reset()
     currentPage_ = SettingsPage::Main;
 
     mainSelection_ = 0;
+    displaySelection_ = 0;
+    themeSelection_ = 0;
     audioSelection_ = 0;
 }

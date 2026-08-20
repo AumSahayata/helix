@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Adafruit_ST7789.h>
-#include <UI.h>
+#include "Theme.h"
 
 namespace Logo
 {
@@ -9,19 +9,19 @@ namespace Logo
         Adafruit_ST7789 &tft,
         int16_t x,
         int16_t y,
-        uint16_t color = Theme::TEXT);
+        uint16_t color = Theme::colors().text);
 
     void drawAccent(
         Adafruit_ST7789 &tft,
         int16_t x,
         int16_t y,
-        uint16_t color = Theme::PRIMARY);
+        uint16_t color = Theme::colors().primary);
 
     void draw(
         Adafruit_ST7789 &tft,
         int16_t x,
         int16_t y,
-        uint16_t color = Theme::PRIMARY);
+        uint16_t color = Theme::colors().primary);
 
     void drawTriangle(
         Adafruit_ST7789 &tft,
@@ -34,5 +34,5 @@ namespace Logo
         int16_t x,
         int16_t y,
         uint8_t edge,
-        uint16_t color = Theme::TEXT);
+        uint16_t color = Theme::colors().text);
 }

@@ -1,4 +1,5 @@
 #include "Pomodoro.h"
+#include "Theme.h"
 
 // =========================
 // Constructor
@@ -41,19 +42,19 @@ void Pomodoro::drawMode()
         70,
         120,
         25,
-        Theme::BACKGROUND);
+        Theme::colors().background);
 
     tft.setTextSize(2);
 
     if (mode == Mode::FOCUS)
     {
-        tft.setTextColor(Theme::PRIMARY);
+        tft.setTextColor(Theme::colors().primary);
         tft.setCursor(85, 70);
         tft.print("FOCUS");
     }
     else
     {
-        tft.setTextColor(Theme::WARNING);
+        tft.setTextColor(Theme::colors().warning);
         tft.setCursor(85, 70);
         tft.print("BREAK");
     }
@@ -106,17 +107,16 @@ void Pomodoro::drawStatus()
     if (running)
     {
         tft.setTextColor(
-            Theme::SUCCESS,
-            Theme::BACKGROUND);
+            Theme::colors().success,
+            Theme::colors().background);
 
         tft.print(" RUNNING ");
     }
     else
     {
         tft.setTextColor(
-            Theme::MUTED,
-            Theme::BACKGROUND
-        );
+            Theme::colors().muted,
+            Theme::colors().background);
 
         tft.print(" PAUSED  ");
     }

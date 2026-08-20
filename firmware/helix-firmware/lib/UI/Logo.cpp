@@ -1,6 +1,6 @@
 #include "Logo.h"
 
-#include <UI.h>
+#include "Theme.h"
 
 namespace
 {
@@ -91,7 +91,7 @@ void Logo::drawTriangle(
             hex2[0][0], hex2[0][1],
             hex2[1][0], hex2[1][1],
             hex2[2][0], hex2[2][1],
-            Theme::PRIMARY);
+            Theme::colors().primary);
         break;
 
     case 1:
@@ -99,7 +99,7 @@ void Logo::drawTriangle(
             hex2[0][0], hex2[0][1],
             hex2[2][0], hex2[2][1],
             hex2[3][0], hex2[3][1],
-            Theme::PRIMARY);
+            Theme::colors().primary);
         break;
 
     case 2:
@@ -107,7 +107,7 @@ void Logo::drawTriangle(
             hex2[0][0], hex2[0][1],
             hex2[3][0], hex2[3][1],
             hex2[4][0], hex2[4][1],
-            Theme::PRIMARY);
+            Theme::colors().primary);
         break;
 
     case 3:
@@ -115,7 +115,7 @@ void Logo::drawTriangle(
             hex2[0][0], hex2[0][1],
             hex2[4][0], hex2[4][1],
             hex2[5][0], hex2[5][1],
-            Theme::PRIMARY);
+            Theme::colors().primary);
         break;
     }
 }

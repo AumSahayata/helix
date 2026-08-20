@@ -5,45 +5,7 @@
 #include <Adafruit_ST7789.h>
 
 #include "Icons.h"
-
-namespace Theme
-{
-    // Theme-1 Slate
-    // constexpr uint16_t BACKGROUND = ST77XX_BLACK;
-    // constexpr uint16_t TEXT = 0xE73C;
-
-    // constexpr uint16_t PRIMARY = 0x4ACF;
-    // constexpr uint16_t SUCCESS = ST77XX_GREEN;
-    // constexpr uint16_t WARNING = ST77XX_YELLOW;
-    // constexpr uint16_t MUTED =  0x8C71;
-
-    // Theme-2 Forest
-    // constexpr uint16_t BACKGROUND = ST77XX_BLACK;
-    // constexpr uint16_t TEXT = 0xE73C;
-
-    // constexpr uint16_t PRIMARY = 0x5B87;
-    // constexpr uint16_t SUCCESS = ST77XX_GREEN;
-    // constexpr uint16_t WARNING = ST77XX_YELLOW;
-    // constexpr uint16_t MUTED =  0x8C50;
-
-    // Theme-3 Sunset
-    constexpr uint16_t BACKGROUND = ST77XX_BLACK;
-    constexpr uint16_t TEXT = 0xE73C;
-
-    constexpr uint16_t PRIMARY = 0xA986;
-    constexpr uint16_t SUCCESS = ST77XX_GREEN;
-    constexpr uint16_t WARNING = ST77XX_YELLOW;
-    constexpr uint16_t MUTED = 0x9491;
-
-    // Theme-4 Mono
-    // constexpr uint16_t BACKGROUND = ST77XX_BLACK;
-    // constexpr uint16_t TEXT = 0xE73C;
-
-    // constexpr uint16_t PRIMARY = 0xC618;
-    // constexpr uint16_t SUCCESS = ST77XX_GREEN;
-    // constexpr uint16_t WARNING = ST77XX_YELLOW;
-    // constexpr uint16_t MUTED = 0x8410;
-}
+#include "Theme.h"
 
 class UI
 {
@@ -55,7 +17,7 @@ public:
     void drawHeader(const char *title);
     void drawMenuItem(
         int index,
-        const char *text,
+        const String& text,
         bool selected,
         Icons::Type icon = Icons::Type::None);
 

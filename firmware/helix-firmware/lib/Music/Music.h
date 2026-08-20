@@ -21,6 +21,7 @@ struct Song
     String menuTitle;
 
     bool metadataLoaded = false;
+    bool metadataDirty = false;
 };
 
 class Music : public App

@@ -16,6 +16,7 @@ enum class SettingsPage
     Audio,
     Volume,
     Display,
+    Theme,
     System,
     About
 };
@@ -46,6 +47,7 @@ private:
     SettingsPage currentPage_ = SettingsPage::Main;
 
     uint8_t mainSelection_ = 0;
+    uint8_t displaySelection_ = 0;
     uint8_t audioSelection_ = 0;
 
     void drawCurrentPage();
@@ -53,6 +55,10 @@ private:
     void drawMainPage();
     void drawAudioPage();
     void drawDisplayPage();
+    uint8_t themeSelection_ = 0;
+
+    void drawThemePage();
+
     void drawSystemPage();
     void drawAboutPage();
 
@@ -60,11 +66,11 @@ private:
     void drawVolumePageStatic();
     void drawVolumeValue();
 
-    const char* getMainMenuText(uint8_t index);
-
     void changePage(SettingsPage page);
 
     void handleMainPageInput(InputEvent event);
     void handleAudioPageInput(InputEvent event);
     void handleVolumePageInput(InputEvent event);
+    void handleDisplayPageInput(InputEvent event);
+    void handleThemeInput(InputEvent event);
 };

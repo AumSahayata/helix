@@ -7,7 +7,7 @@ UI::UI(Adafruit_ST7789 &display)
 
 void UI::clear()
 {
-    tft.fillScreen(Theme::BACKGROUND);
+    tft.fillScreen(Theme::colors().background);
 }
 
 void UI::drawHeader(const char *title)
@@ -24,7 +24,7 @@ void UI::drawHeader(const char *title)
 
     // ---------- Brand ----------
     tft.setTextSize(kBrandSize);
-    tft.setTextColor(Theme::PRIMARY);
+    tft.setTextColor(Theme::colors().primary);
 
     tft.setCursor(
         kPadding,
@@ -34,7 +34,7 @@ void UI::drawHeader(const char *title)
 
     // ---------- Title ----------
     tft.setTextSize(kTitleSize);
-    tft.setTextColor(Theme::MUTED);
+    tft.setTextColor(Theme::colors().muted);
 
     int16_t x1, y1;
     uint16_t w, h;
@@ -59,12 +59,12 @@ void UI::drawHeader(const char *title)
         kPadding,
         kDividerY,
         tft.width() - (kPadding * 2),
-        Theme::PRIMARY);
+        Theme::colors().primary);
 }
 
 void UI::drawMenuItem(
     int index,
-    const char *text,
+    const String& text,
     bool selected,
     Icons::Type icon)
 {
@@ -84,10 +84,10 @@ void UI::drawMenuItem(
     const int16_t centerY = y + (kItemHeight / 2) - kItemVerticalOffset;
 
     const uint16_t bgColor =
-        selected ? Theme::PRIMARY : Theme::BACKGROUND;
+        selected ? Theme::colors().primary : Theme::colors().background;
 
     const uint16_t textColor =
-        selected ? Theme::BACKGROUND : Theme::TEXT;
+        selected ? Theme::colors().background : Theme::colors().text;
 
     // Clear row
     tft.fillRect(
@@ -95,7 +95,7 @@ void UI::drawMenuItem(
         y - kItemVerticalOffset,
         itemWidth,
         kItemHeight,
-        Theme::BACKGROUND);
+        Theme::colors().background);
 
     if (selected)
     {
@@ -105,7 +105,7 @@ void UI::drawMenuItem(
             itemWidth,
             kItemHeight,
             kCornerRadius,
-            Theme::PRIMARY);
+            Theme::colors().primary);
     }
 
     if (icon != Icons::Type::None)

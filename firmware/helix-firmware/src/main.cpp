@@ -138,6 +138,7 @@ void setup()
 
   startup.startTask("Settings");
   settings.load();
+  Theme::set(settings.getTheme());
   startup.finishTask();
   startup.tick();
 
