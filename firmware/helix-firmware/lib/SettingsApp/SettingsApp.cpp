@@ -298,7 +298,8 @@ void SettingsApp::drawAboutPage()
     Logo::draw(
         tft,
         (tft.width() - kLogoWidth) / 2,
-        ui.nextBlock(layout, kLogoHeight, 25));
+        95,
+        Theme::MUTED);
 
     // Tagline
     ui.drawCenteredText(
@@ -329,7 +330,7 @@ void SettingsApp::drawAboutPage()
     y = ui.nextLine(layout, 1, 8);
 
     tft.setCursor(20, y);
-    tft.print("Board");
+    tft.print("Platform");
     tft.setCursor(120, y);
     tft.print("ESP32-S3 (N16R8)");
 
@@ -343,7 +344,7 @@ void SettingsApp::drawAboutPage()
     // Divider
     tft.drawFastHLine(
         20,
-        ui.nextLine(layout, 1, 12),
+        ui.nextLine(layout, 1, 50),
         tft.width() - 40,
         Theme::PRIMARY);
 
@@ -357,7 +358,7 @@ void SettingsApp::drawAboutPage()
         "Open Source",
         ui.nextLine(layout, 1, 8),
         1,
-        Theme::MUTED);
+        Theme::TEXT);
 }
 
 void SettingsApp::drawVolumePageStatic()

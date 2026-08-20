@@ -15,7 +15,8 @@ inline int16_t S(float value)
 void Logo::drawOutline(
     Adafruit_ST7789 &tft,
     int16_t x,
-    int16_t y)
+    int16_t y,
+    uint16_t color)
 {
     for (uint8_t i = 0; i < 6; i++)
     {
@@ -23,14 +24,16 @@ void Logo::drawOutline(
             tft,
             x,
             y,
-            i);
+            i,
+            color);
     }
 }
 
 void Logo::drawAccent(
     Adafruit_ST7789 &tft,
     int16_t x,
-    int16_t y)
+    int16_t y,
+    uint16_t color)
 {
     const int16_t hex2[6][2] =
         {
@@ -45,25 +48,25 @@ void Logo::drawAccent(
         hex2[0][0], hex2[0][1],
         hex2[1][0], hex2[1][1],
         hex2[2][0], hex2[2][1],
-        Theme::PRIMARY);
+        color);
 
     tft.fillTriangle(
         hex2[0][0], hex2[0][1],
         hex2[2][0], hex2[2][1],
         hex2[3][0], hex2[3][1],
-        Theme::PRIMARY);
+        color);
 
     tft.fillTriangle(
         hex2[0][0], hex2[0][1],
         hex2[3][0], hex2[3][1],
         hex2[4][0], hex2[4][1],
-        Theme::PRIMARY);
+        color);
 
     tft.fillTriangle(
         hex2[0][0], hex2[0][1],
         hex2[4][0], hex2[4][1],
         hex2[5][0], hex2[5][1],
-        Theme::PRIMARY);
+        color);
 }
 
 void Logo::drawTriangle(
@@ -120,17 +123,19 @@ void Logo::drawTriangle(
 void Logo::draw(
     Adafruit_ST7789 &tft,
     int16_t x,
-    int16_t y)
+    int16_t y,
+    uint16_t color)
 {
-    drawOutline(tft, x, y);
-    drawAccent(tft, x, y);
+    drawOutline(tft, x, y, color);
+    drawAccent(tft, x, y, color);
 }
 
 void Logo::drawEdge(
     Adafruit_ST7789 &tft,
     int16_t x,
     int16_t y,
-    uint8_t edge)
+    uint8_t edge,
+    uint16_t color)
 {
     const int16_t hex1[6][2] =
         {
@@ -151,5 +156,5 @@ void Logo::drawEdge(
         hex1[edge][1],
         hex1[next][0],
         hex1[next][1],
-        Theme::TEXT);
+        color);
 }

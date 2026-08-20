@@ -96,7 +96,7 @@ This roadmap tracks the firmware evolution of Helix.
 - [ ] Animations
 - [ ] Theme customization
 - [ ] Performance optimization
-- [ ] Boot animation
+- [x] Boot animation
 - [ ] Error handling
 
 ---
