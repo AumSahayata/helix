@@ -88,8 +88,6 @@ void goHome()
 {
   currentApp = nullptr;
   homeMenu.draw();
-
-  Serial.println("Returning home");
 }
 
 void openApp(App &app)
@@ -166,8 +164,6 @@ void setup()
   }
 
   homeMenu.draw();
-
-  Serial.println("HELIX UI ready");
 }
 
 // =========================

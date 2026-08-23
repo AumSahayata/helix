@@ -62,16 +62,12 @@ void Stopwatch::startPause()
     {
         startTime = millis();
         running = true;
-
-        Serial.println("Stopwatch started");
     }
     else
     {
         elapsed += millis() - startTime;
 
         running = false;
-
-        Serial.println("Stopwatch paused");
     }
 }
 
@@ -84,8 +80,6 @@ void Stopwatch::reset()
         elapsed = 0;
 
         drawTime(0);
-
-        Serial.println("Stopwatch reset");
     }
 }
 

@@ -19,12 +19,23 @@ Rather than replacing a smartphone, Helix is designed as a dedicated companion f
 
 - ✅ ESP32-S3 firmware running with PlatformIO
 - ✅ ST7789 display
-- ✅ Physical button input
-- ✅ Read SD card
-- ✅ Play music
-- ✅ Stopwatch and Pomodoro timer
-- 🚧 Menu and UI system
-- 🚧 Hardware integration
+- ✅ Physical button input with debouncing and hold/repeat events
+- ✅ SD card music library
+- ✅ MP3 playback through PCM5102A I2S DAC
+- ✅ Playlist navigation and Play Random
+- ✅ Album artwork
+- ✅ Audio metadata
+- ✅ Volume control
+- ✅ Stopwatch
+- ✅ Pomodoro timer
+- ✅ Settings application
+- ✅ Persistent settings
+- ✅ Runtime theme customization
+- ✅ About page
+- ✅ Modular UI and reusable widgets
+- 🚧 Bluetooth integration
+- 🚧 Battery and power management
+- 🚧 Display brightness control
 
 ## Planned Features
 
@@ -33,6 +44,7 @@ Rather than replacing a smartphone, Helix is designed as a dedicated companion f
 - To-do list
 - Bluetooth music player
 - Password Key
+- Power management
 - More to come ...
 
 ## Hardware

@@ -1,10 +1,6 @@
 # Helix Roadmap
 
-This roadmap tracks the firmware evolution of Helix.
-
----
-
-# Version 0.1 — Hardware Bring-up ✅
+## Version 0.1 — Hardware Bring-up ✅
 
 - [x] ESP32-S3 setup
 - [x] Serial debugging
@@ -13,104 +9,52 @@ This roadmap tracks the firmware evolution of Helix.
 
 ---
 
-# Version 0.2 — Firmware Foundation ✅
+## Version 0.2 — UI & Firmware Foundation ✅
 
-## Input
-
+### Input
 - [x] Centralized Input Manager
 - [x] Debouncing
 - [x] InputEvent architecture
 - [x] Hold detection
-- [ ] Repeat events
+- [x] Repeat events
 
-## UI
-
+### UI
 - [x] Shared UI class
 - [x] Theme system
+- [x] Persistent themes
 - [x] Partial redraws
 - [x] Home menu
 - [x] HomeMenu component
 - [x] Shared widgets
+- [x] About page
 
-## Applications
-
-- [x] Music prototype
+### Applications
+- [x] Music player
 - [x] Pomodoro
 - [x] Stopwatch
+- [x] Settings
 
-## Architecture
+### Music
+- [x] SD card music library
+- [x] Playlist generation
+- [x] MP3 playback
+- [x] I2S / PCM5102A output
+- [x] Volume control
+- [x] Album artwork
+- [x] Metadata
+- [x] Play Random
 
+### Architecture
 - [x] Modular project structure
 - [x] App-owned input
 - [x] Router-based navigation
+- [x] Reusable UI components
 
----
+## Version 0.3 — Device Integration
 
-# Version 0.3 — Real Music Player (Current)
-
-## Storage
-
-- [x] SD card initialization
-- [ ] File browser
-- [x] Playlist generation
-
-## Audio
-
-- [x] I2S driver
-- [x] PCM5102A output
-- [x] MP3 decoding
-- [ ] WAV support
-
-## Music
-
-- [x] Volume control
-- [x] Album artwork
-- [x] Metadata parsing
-- [x] Music Playlist
-
----
-
-# Version 0.4 — Device Features
-
-- [x] Settings application
+- [ ] Display brightness
 - [ ] Battery monitoring
-- [ ] Brightness control
 - [ ] Sleep mode
 - [ ] Power management
-
----
-
-# Version 0.5 — Productivity Apps
-
-- [ ] Calendar
-- [ ] Password Manager
-- [ ] Notes
-- [ ] Timer improvements
-- [ ] Stopwatch improvements
-
----
-
-# Version 0.6 — Polish
-
-- [ ] Help overlay
-- [x] Theme customization
-- [ ] Performance optimization
-- [x] Boot animation
-- [ ] Error handling
-
----
-
-# Long-Term Ideas
-
-These are exploratory ideas and not committed features.
-
-- Bluetooth Audio
-- BLE Companion App
-- Wi-Fi Synchronization
-- Weather
-- Calculator
-- File Explorer
-- Plugin System
-- Custom PCB
-- Custom Acrylic Enclosure
-- 3D Printed Case
+- [ ] Improved storage/file browser
+- [ ] WAV playback

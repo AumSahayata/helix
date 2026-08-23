@@ -131,8 +131,6 @@ void Pomodoro::startPause()
     {
         startTime = millis();
         running = true;
-
-        Serial.println("Pomodoro started");
     }
     else
     {
@@ -149,8 +147,6 @@ void Pomodoro::startPause()
         }
 
         running = false;
-
-        Serial.println("Pomodoro paused");
     }
 
     drawStatus();
@@ -179,8 +175,6 @@ void Pomodoro::reset()
 
     drawTime(remaining);
     drawStatus();
-
-    Serial.println("Pomodoro reset");
 }
 
 // =========================
@@ -192,15 +186,11 @@ void Pomodoro::switchMode()
     {
         mode = Mode::BREAK;
         remaining = BREAK_TIME;
-
-        Serial.println("Focus complete -> Break");
     }
     else
     {
         mode = Mode::FOCUS;
         remaining = FOCUS_TIME;
-
-        Serial.println("Break complete -> Focus");
     }
 
     // Automatically start next session.

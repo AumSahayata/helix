@@ -12,21 +12,21 @@ The goal is to keep hardware access, application logic, and user interface separ
                 |      Router      |
                 +--------+---------+
                          |
-      +------------------+------------------+
-      |          |             |            |
-      ▼          ▼             ▼            ▼
-  HomeMenu   Stopwatch       Music       Pomodoro
+       +-----------------+-----------------+
+       |        |        |        |        |
+       ▼        ▼        ▼        ▼        ▼
+   HomeMenu   Music   Settings  Stopwatch Pomodoro
 
-             Shared Components
-      +-------------------------------+
-      | Input | UI | Widgets | Theme |
-      +-------------------------------+
+                 Shared Components
+       +------------------------------------+
+       | Input | UI | Widgets | Theme       |
+       +------------------------------------+
 
-                 Hardware
-      +-------------------------------+
-      | ESP32-S3 | ST7789 | Buttons   |
-      +-------------------------------+
-```
+                    Hardware
+       +------------------------------------+
+       | ESP32-S3 | ST7789 | SD | DAC | GPIO |
+       +------------------------------------+
+       ```
 
 ---
 
@@ -115,11 +115,11 @@ Current widgets:
 - Progress Bar
 - Time Formatting
 - Text Fitting
+- Overlay Box
+- Marquee Text
 
 Future widgets:
 
-- Dialog
-- List
 - Battery Indicator
 - Volume Indicator
 
@@ -146,18 +146,16 @@ Owns the music player.
 
 Responsibilities:
 
-- Drawing the music screen
-- Playback state
-- Track information
-- Progress updates
-- Music input handling
-
-Future:
-
-- SD card playback
-- I2S audio
-- Album art
+- Music library
+- Playlist generation
+- Playlist navigation
+- Random playback
+- MP3 playback
+- Audio metadata
+- Album artwork
 - Volume control
+- Progress display
+- Music input handling
 
 ---
 
@@ -182,6 +180,20 @@ Responsibilities:
 - Timing
 - Drawing
 - Input handling
+
+---
+
+## Settings
+
+Owns device configuration.
+
+Responsibilities:
+
+- Settings navigation
+- Volume configuration
+- Theme selection
+- Persistent settings
+- About page
 
 ---
 

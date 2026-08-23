@@ -4,7 +4,7 @@ HomeMenu::HomeMenu(
     Adafruit_ST7789 &display,
     UI &ui)
     : tft(display),
-        ui(ui)
+      ui(ui)
 {
 }
 
@@ -44,9 +44,6 @@ HomeAction HomeMenu::handleInput(InputEvent event)
             selectedItem,
             menuItems[selectedItem].title,
             true);
-
-        Serial.print("Selected: ");
-        Serial.println(menuItems[selectedItem].title);
     }
 
     else if (event == InputEvent::DOWN_PRESS)
@@ -67,20 +64,9 @@ HomeAction HomeMenu::handleInput(InputEvent event)
             selectedItem,
             menuItems[selectedItem].title,
             true);
-
-        Serial.print("Selected: ");
-        Serial.println(menuItems[selectedItem].title);
     }
-    else if (event == InputEvent::SELECT_HOLD)
-    {
-        Serial.println("SELECT HOLD");
-    }
-
     else if (event == InputEvent::SELECT_PRESS)
     {
-        Serial.print("Opening: ");
-        Serial.println(menuItems[selectedItem].title);
-
         return menuItems[selectedItem].action;
     }
     return HomeAction::NONE;
