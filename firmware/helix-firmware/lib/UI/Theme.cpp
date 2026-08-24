@@ -70,7 +70,7 @@ namespace Theme
             return kMono;
         }
 
-        return kSunset;
+        return kMono;
     }
 
     const char *name(Type type)

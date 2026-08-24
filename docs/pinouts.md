@@ -16,10 +16,10 @@ GPIO assignments for the ESP32-S3 used by Helix.
 | GPIO16 | DAC BCK | I2S |
 | GPIO17 | DAC LRCK | I2S |
 | GPIO18 | DAC DIN | I2S |
-| GPIO35 | UP Button | GPIO |
-| GPIO36 | DOWN Button | GPIO |
-| GPIO37 | SELECT Button | GPIO |
-| GPIO38 | BACK Button | GPIO |
+| GPIO01 | UP Button | GPIO |
+| GPIO01 | DOWN Button | GPIO |
+| GPIO15 | SELECT Button | GPIO |
+| GPIO21 | BACK Button | GPIO |
 
 ---
 
@@ -104,7 +104,7 @@ All buttons use the ESP32's internal pull-up resistors (`INPUT_PULLUP`).
 | UP | GPIO1 |
 | DOWN | GPIO2 |
 | SELECT | GPIO15 |
-| BACK | GPIO121 |
+| BACK | GPIO21 |
 
 Each button is wired:
 

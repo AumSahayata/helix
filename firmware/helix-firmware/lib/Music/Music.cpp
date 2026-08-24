@@ -5,6 +5,34 @@
 #include "Theme.h"
 #include "UI.h"
 
+namespace
+{
+    constexpr ControlHint kLibraryHints[] =
+        {
+            {"UP", "Press", "Navigate"},
+            {"DOWN", "Press", "Navigate"},
+            {"SELECT", "Press", "Play"},
+            {"SELECT", "Hold", "Play Random"},
+            {"BACK", "Press", "Return"},
+    };
+
+    constexpr ControlHint kPlayerHints[] =
+        {
+            {"UP", "Press", "Next Track"},
+            {"DOWN", "Press", "Previous Track"},
+            {"UP", "Hold", "Volume +"},
+            {"DOWN", "Hold", "Volume -"},
+            {"SELECT", "Press", "Play / Pause"},
+            {"BACK", "Press", "Return"},
+    };
+
+    constexpr size_t kLibraryHintCount =
+        sizeof(kLibraryHints) / sizeof(kLibraryHints[0]);
+
+    constexpr size_t kPlayerHintCount =
+        sizeof(kPlayerHints) / sizeof(kPlayerHints[0]);
+}
+
 Music::Music(
     Adafruit_ST7789 &display,
     UI &uiManager,
@@ -56,6 +84,14 @@ void Music::onEnter()
     if (playlist.empty())
     {
         setPlaylist(library.tracks());
+    }
+}
+
+void Music::onExit()
+{
+    if (isPlaying())
+    {
+        playPause();
     }
 }
 
@@ -735,4 +771,21 @@ void Music::setPlaylist(const std::vector<String> &files)
             playlist.push_back(song);
         }
     }
+}
+
+const ControlHint *Music::getControlHints(size_t &count) const
+{
+    if (currentView == View::Player)
+    {
+        count = kPlayerHintCount;
+        return kPlayerHints;
+    }
+
+    count = kLibraryHintCount;
+    return kLibraryHints;
+}
+
+ControlHintsPosition Music::getControlHintsPosition() const
+{
+    return ControlHintsPosition::Top;
 }

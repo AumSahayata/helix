@@ -1,6 +1,19 @@
 #include "Pomodoro.h"
 #include "Theme.h"
 
+namespace
+{
+    constexpr ControlHint kPomodoroHints[] =
+        {
+            {"UP", "Press", "Reset"},
+            {"SELECT", "Press", "Start / Pause"},
+            {"BACK", "Press", "Return"},
+    };
+
+    constexpr size_t kPomodoroHintCount =
+        sizeof(kPomodoroHints) / sizeof(kPomodoroHints[0]);
+}
+
 // =========================
 // Constructor
 // =========================
@@ -16,6 +29,14 @@ Pomodoro::Pomodoro(Adafruit_ST7789 &display, UI &uiManager)
 void Pomodoro::begin()
 {
     // Nothing required yet.
+}
+
+void Pomodoro::onExit()
+{
+    if (isRunning())
+    {
+        startPause();
+    }
 }
 
 // =========================
@@ -270,4 +291,15 @@ bool Pomodoro::handleInput(InputEvent event)
         return false;
         break;
     }
+}
+
+const ControlHint *Pomodoro::getControlHints(size_t &count) const
+{
+    count = kPomodoroHintCount;
+    return kPomodoroHints;
+}
+
+ControlHintsPosition Pomodoro::getControlHintsPosition() const
+{
+    return ControlHintsPosition::Bottom;
 }

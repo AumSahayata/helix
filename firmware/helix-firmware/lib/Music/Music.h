@@ -46,6 +46,9 @@ public:
     void update() override;
     bool handleInput(InputEvent event) override;
     void onEnter() override;
+    void onExit() override;
+    const ControlHint *getControlHints(size_t &count) const override;
+    ControlHintsPosition getControlHintsPosition() const override;
 
     void setPlaylist(const std::vector<String> &files);
 

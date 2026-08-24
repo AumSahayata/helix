@@ -22,6 +22,10 @@ public:
     void draw() override;
     void update() override;
     bool handleInput(InputEvent event) override;
+    const ControlHint *getControlHints(size_t &count) const override;
+    ControlHintsPosition getControlHintsPosition() const override;
+    
+    void onExit() override;
 
 private:
     enum class Mode

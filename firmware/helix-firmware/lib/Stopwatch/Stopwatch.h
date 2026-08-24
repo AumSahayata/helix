@@ -23,6 +23,10 @@ public:
     void draw() override;
     void update() override;
     bool handleInput(InputEvent event) override;
+    void onExit() override;
+
+    const ControlHint *getControlHints(size_t &count) const override;
+    ControlHintsPosition getControlHintsPosition() const override;
 
 private:
     Adafruit_ST7789 &tft;

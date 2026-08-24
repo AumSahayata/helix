@@ -7,6 +7,9 @@
 #include "Icons.h"
 #include "Theme.h"
 
+struct ControlHint;
+enum class ControlHintsPosition;
+
 class UI
 {
 public:
@@ -17,9 +20,14 @@ public:
     void drawHeader(const char *title);
     void drawMenuItem(
         int index,
-        const String& text,
+        const String &text,
         bool selected,
         Icons::Type icon = Icons::Type::None);
+
+    void drawControlHints(
+        const ControlHint *hints,
+        size_t count,
+        ControlHintsPosition position);
 
     // Layout helpers
     int16_t centerX(int16_t width) const;

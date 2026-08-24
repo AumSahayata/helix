@@ -4,6 +4,17 @@
 
 namespace
 {
+    constexpr ControlHint kSettingsHints[] =
+        {
+            {"UP", "Press", "Navigate"},
+            {"DOWN", "Press", "Navigate"},
+            {"SELECT", "Press", "Select / Enter"},
+            {"BACK", "Press", "Return"},
+        };
+
+    constexpr size_t kSettingsHintCount =
+        sizeof(kSettingsHints) / sizeof(kSettingsHints[0]);
+
     constexpr int16_t kMenuStartY = 75;
     constexpr int16_t kMenuItemSpacing = 35;
 
@@ -55,6 +66,11 @@ void SettingsApp::onEnter()
     reset();
 }
 
+void SettingsApp::onExit()
+{
+    settings.save();
+}
+
 void SettingsApp::begin()
 {
 }
@@ -91,7 +107,6 @@ bool SettingsApp::handleInput(InputEvent event)
             return true;
 
         case SettingsPage::Main:
-            settings.save();
             return false; // Let main.cpp go Home
         }
     }
@@ -295,7 +310,7 @@ void SettingsApp::handleThemeInput(InputEvent event)
                 Theme::name(kThemes[themeSelection_]),
                 true);
         }
-        
+
         break;
 
     case InputEvent::SELECT_PRESS:
@@ -582,4 +597,10 @@ void SettingsApp::reset()
     displaySelection_ = 0;
     themeSelection_ = 0;
     audioSelection_ = 0;
+}
+
+const ControlHint *SettingsApp::getControlHints(size_t &count) const
+{
+    count = kSettingsHintCount;
+    return kSettingsHints;
 }

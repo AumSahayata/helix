@@ -1,6 +1,19 @@
 #include "Stopwatch.h"
 #include <Input.h>
 
+namespace
+{
+    constexpr ControlHint kStopwatchHints[] =
+        {
+            {"UP", "Press", "Reset (when paused)"},
+            {"SELECT", "Press", "Start / Pause"},
+            {"BACK", "Press", "Return"},
+    };
+
+    constexpr size_t kStopwatchHintCount =
+        sizeof(kStopwatchHints) / sizeof(kStopwatchHints[0]);
+}
+
 Stopwatch::Stopwatch(Adafruit_ST7789 &display, UI &uiManager)
     : tft(display), ui(uiManager)
 {
@@ -8,8 +21,14 @@ Stopwatch::Stopwatch(Adafruit_ST7789 &display, UI &uiManager)
 
 void Stopwatch::begin()
 {
-    // Nothing required yet.
-    // Keeping begin() gives us somewhere for future setup.
+}
+
+void Stopwatch::onExit()
+{
+    if (isRunning())
+    {
+        startPause();
+    }
 }
 
 void Stopwatch::draw()
@@ -124,4 +143,15 @@ bool Stopwatch::handleInput(InputEvent event)
         return false;
         break;
     }
+}
+
+const ControlHint *Stopwatch::getControlHints(size_t &count) const
+{
+    count = kStopwatchHintCount;
+    return kStopwatchHints;
+}
+
+ControlHintsPosition Stopwatch::getControlHintsPosition() const
+{
+    return ControlHintsPosition::Bottom;
 }

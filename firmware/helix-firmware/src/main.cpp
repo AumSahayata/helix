@@ -62,27 +62,8 @@ Input input(
 
 App *currentApp = nullptr;
 
-// =========================
-// Draw Temporary App
-// =========================
-void drawApp()
-{
-  tft.fillScreen(ST77XX_BLACK);
-
-  tft.setTextColor(ST77XX_WHITE);
-
-  tft.setTextSize(3);
-  tft.setCursor(20, 100);
-  tft.println("Coming Soon");
-
-  tft.setTextSize(2);
-  tft.setCursor(20, 160);
-  tft.println("Coming soon");
-
-  tft.setTextSize(1);
-  tft.setCursor(20, 290);
-  tft.println("BACK to return");
-}
+bool controlHintsVisible = false;
+uint32_t controlHintsShownAt = 0;
 
 void goHome()
 {
@@ -95,18 +76,6 @@ void openApp(App &app)
   currentApp = &app;
   currentApp->onEnter();
   currentApp->draw();
-}
-
-// =========================
-// App Input
-// =========================
-void handleAppInput(InputEvent event)
-{
-
-  if (event == InputEvent::BACK_PRESS)
-  {
-    goHome();
-  }
 }
 
 // =========================
@@ -173,6 +142,17 @@ void loop()
 {
   InputEvent event = input.getEvent();
 
+  if (controlHintsVisible &&
+      millis() - controlHintsShownAt >= 2000)
+  {
+    controlHintsVisible = false;
+
+    if (currentApp != nullptr)
+    {
+      currentApp->draw();
+    }
+  }
+
   audioPlayer.update();
 
   if (currentApp == nullptr)
@@ -206,36 +186,42 @@ void loop()
   }
 
   currentApp->update();
+
+  if (event == InputEvent::BACK_HOLD ||
+      event == InputEvent::BACK_REPEAT)
+  {
+    size_t hintCount = 0;
+
+    const ControlHint *hints =
+        currentApp->getControlHints(hintCount);
+
+    if (hints != nullptr && hintCount > 0)
+    {
+      if (!controlHintsVisible)
+      {
+        ui.drawControlHints(hints, hintCount, currentApp->getControlHintsPosition());
+        controlHintsVisible = true;
+      }
+
+      controlHintsShownAt = millis();
+    }
+
+    return;
+  }
+  // Hint overlay is modal.
+  if (controlHintsVisible)
+  {
+    if (event != InputEvent::NONE)
+    {
+      return;
+    }
+  }
+
   bool handled = currentApp->handleInput(event);
 
   if (!handled && event == InputEvent::BACK_PRESS)
   {
-    // Temporary app-specific cleanup
-
-    if (currentApp == &music)
-    {
-      if (music.isPlaying())
-      {
-        music.playPause();
-      }
-    }
-
-    if (currentApp == &stopwatch)
-    {
-      if (stopwatch.isRunning())
-      {
-        stopwatch.startPause();
-      }
-    }
-
-    if (currentApp == &pomodoro)
-    {
-      if (pomodoro.isRunning())
-      {
-        pomodoro.startPause();
-      }
-    }
-
+    currentApp->onExit();
     goHome();
   }
 }

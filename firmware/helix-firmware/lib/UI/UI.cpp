@@ -1,4 +1,6 @@
 #include "UI.h"
+#include "App.h"
+#include "Widgets.h"
 
 UI::UI(Adafruit_ST7789 &display)
     : tft(display)
@@ -64,7 +66,7 @@ void UI::drawHeader(const char *title)
 
 void UI::drawMenuItem(
     int index,
-    const String& text,
+    const String &text,
     bool selected,
     Icons::Type icon)
 {
@@ -239,4 +241,97 @@ int16_t UI::nextBlock(
     layout.currentY += blockHeight + gap;
 
     return y;
+}
+
+void UI::drawControlHints(
+    const ControlHint *hints,
+    size_t count,
+    ControlHintsPosition position)
+{
+    if (hints == nullptr || count == 0)
+    {
+        return;
+    }
+
+    constexpr int16_t kOverlayWidth = 230;
+    constexpr int16_t kPadding = 8;
+    constexpr int16_t kHeaderHeight = 26;
+    constexpr int16_t kRowHeight = 20;
+
+    constexpr uint8_t kHeaderTextSize = 2;
+    constexpr uint8_t kTextSize = 1;
+
+    const int16_t overlayHeight =
+        kPadding +
+        kHeaderHeight +
+        (count * kRowHeight) +
+        kPadding;
+
+    const int16_t x = centerX(kOverlayWidth);
+
+    const int16_t centerYPosition  = centerY(overlayHeight);
+    int16_t y = centerYPosition;
+
+    switch (position)
+    {
+    case ControlHintsPosition::Top:
+        y = centerY(overlayHeight) - 30;
+        break;
+
+    case ControlHintsPosition::Bottom:
+        y = tft.height() - overlayHeight - 30;
+        break;
+
+    case ControlHintsPosition::Center:
+    default:
+        break;
+    }
+
+    Widgets::drawOverlayBox(
+        tft,
+        x,
+        y,
+        kOverlayWidth,
+        overlayHeight);
+
+    // Header
+    tft.setTextSize(kHeaderTextSize);
+    tft.setTextColor(Theme::colors().primary);
+    tft.setCursor(
+        x + kPadding,
+        y + kPadding);
+
+    tft.print("CONTROLS");
+
+    tft.drawFastHLine(
+        x + kPadding,
+        y + kHeaderHeight,
+        kOverlayWidth - (kPadding * 2),
+        Theme::colors().muted);
+
+    // Columns
+    constexpr int16_t kButtonOffset = 8;
+    constexpr int16_t kGestureOffset = 62;
+    constexpr int16_t kActionOffset = 112;
+
+    tft.setTextSize(kTextSize);
+    tft.setTextColor(Theme::colors().text);
+
+    for (size_t i = 0; i < count; ++i)
+    {
+        const int16_t rowY =
+            y +
+            kHeaderHeight +
+            9 +
+            (i * kRowHeight);
+
+        tft.setCursor(x + kButtonOffset, rowY);
+        tft.print(hints[i].button);
+
+        tft.setCursor(x + kGestureOffset, rowY);
+        tft.print(hints[i].gesture);
+
+        tft.setCursor(x + kActionOffset, rowY);
+        tft.print(hints[i].action);
+    }
 }

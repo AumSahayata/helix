@@ -35,6 +35,9 @@ SettingsApp(
     void update() override;
     bool handleInput(InputEvent event) override;
     void onEnter() override;
+    void onExit() override;
+
+    const ControlHint *getControlHints(size_t &count) const override;
 
     void reset();
 
