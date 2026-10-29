@@ -26,7 +26,7 @@ The goal is to keep hardware access, application logic, and user interface separ
        +------------------------------------+
        | ESP32-S3 | ST7789 | SD | DAC | GPIO |
        +------------------------------------+
-       ```
+```
 
 ---
 
